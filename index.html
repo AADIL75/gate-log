@@ -125,9 +125,14 @@ button:disabled{opacity:0.35;cursor:not-allowed;}
 </head>
 <body>
 <header>
-  <div class="wordmark"><b>GATE LOG</b> · NH212</div>
-  <h1>Sequence Scanner</h1>
-  <div class="sub">PDF417 · IATA BCBP · AUTO-LOG</div>
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+    <div>
+      <div class="wordmark"><b>GATE LOG</b> · NH212</div>
+      <h1>Sequence Scanner</h1>
+      <div class="sub">PDF417 · IATA BCBP · AUTO-LOG</div>
+    </div>
+    <button onclick="editEndpoint()" style="font-family:var(--mono);font-size:9px;letter-spacing:0.08em;text-transform:uppercase;padding:6px 10px;border-radius:2px;border:1px solid rgba(238,241,234,0.2);background:transparent;color:rgba(238,241,234,0.4);cursor:pointer;flex:unset;margin-top:4px;">Edit URL</button>
+  </div>
 </header>
 <main>
   <div class="setup-banner" id="setupBanner">
@@ -202,6 +207,14 @@ let endpoint = localStorage.getItem("gatelog_ep") || "";
 const banner  = document.getElementById("setupBanner");
 const epInput = document.getElementById("endpointInput");
 if (endpoint){ epInput.value = endpoint; banner.style.display = "none"; }
+
+window.editEndpoint = function(){
+  localStorage.removeItem("gatelog_ep");
+  endpoint = "";
+  epInput.value = "";
+  banner.style.display = "block";
+  banner.scrollIntoView({behavior:"smooth"});
+};
 
 window.saveEndpoint = function(){
   const v = epInput.value.trim();
