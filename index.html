@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Gate Log — NH212</title>
+<style>
+:root{
+  --ink:#0c1a17;--paper:#eef1ea;--runway:#1f3d33;
+  --beacon:#ff5a1f;--beacon-dim:#c94816;--line:#c7cdbf;
+  --deboard:#2a6aaa;
+  --mono:'IBM Plex Mono','SF Mono',ui-monospace,monospace;
+  --sans:'Inter',-apple-system,system-ui,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{background:var(--ink);color:var(--paper);font-family:var(--sans);min-height:100vh;display:flex;flex-direction:column;}
+
+/* Header */
+header{padding:14px 18px 10px;border-bottom:1px solid rgba(238,241,234,0.1);}
+.wordmark{font-family:var(--mono);font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:var(--beacon);}
+.wordmark b{color:var(--paper);}
+h1{font-family:var(--mono);font-weight:600;font-size:clamp(18px,5vw,24px);margin-top:3px;}
+.sub{font-family:var(--mono);font-size:9px;color:rgba(238,241,234,0.4);letter-spacing:0.05em;margin-top:3px;}
+
+main{flex:1;padding:12px 14px 70px;max-width:640px;width:100%;margin:0 auto;}
+
+/* Setup banner */
+.setup-banner{border:1px solid var(--beacon-dim);background:rgba(255,90,31,0.08);font-family:var(--mono);font-size:12px;line-height:1.6;padding:12px 14px;margin-bottom:12px;border-radius:2px;}
+.setup-banner input{width:100%;font-family:var(--mono);font-size:11px;padding:8px 10px;background:rgba(0,0,0,0.3);border:1px solid rgba(238,241,234,0.2);color:var(--paper);border-radius:2px;margin:6px 0;}
+.setup-banner button{width:100%;font-family:var(--mono);font-size:12px;letter-spacing:0.06em;text-transform:uppercase;padding:10px;border-radius:2px;border:none;background:var(--beacon);color:#1a0d05;font-weight:600;cursor:pointer;}
+
+/* Mode toggle */
+.mode-toggle{display:flex;gap:0;margin-bottom:12px;border:1px solid rgba(238,241,234,0.15);border-radius:2px;overflow:hidden;}
+.mode-btn{flex:1;font-family:var(--mono);font-size:11px;letter-spacing:0.08em;text-transform:uppercase;padding:10px;border:none;background:transparent;color:rgba(238,241,234,0.45);cursor:pointer;}
+.mode-btn.active-board{background:var(--beacon);color:#1a0d05;font-weight:600;}
+.mode-btn.active-deboard{background:var(--deboard);color:#fff;font-weight:600;}
+.mode-divider{width:1px;background:rgba(238,241,234,0.15);}
+
+/* Camera */
+.scan-panel{border:1px solid rgba(238,241,234,0.15);border-radius:2px;overflow:hidden;background:#000;position:relative;aspect-ratio:4/3;transition:border-color 0.3s;}
+.scan-panel.deboard-mode{border-color:var(--deboard);}
+#video{width:100%;height:100%;object-fit:cover;display:block;}
+.mode-overlay{position:absolute;top:0;left:0;right:0;padding:6px;font-family:var(--mono);font-size:10px;letter-spacing:0.1em;text-transform:uppercase;font-weight:600;text-align:center;}
+.mode-overlay.board{background:rgba(255,90,31,0.85);color:#1a0d05;}
+.mode-overlay.deboard{background:rgba(42,106,170,0.9);color:#fff;}
+.reticle{position:absolute;inset:16% 8%;pointer-events:none;}
+.reticle::before,.reticle::after,.reticle span::before,.reticle span::after{content:"";position:absolute;width:24px;height:24px;border:2px solid var(--beacon);}
+.reticle::before{top:0;left:0;border-right:none;border-bottom:none;}
+.reticle::after{top:0;right:0;border-left:none;border-bottom:none;}
+.reticle span::before{bottom:0;left:0;border-right:none;border-top:none;}
+.reticle span::after{bottom:0;right:0;border-left:none;border-top:none;}
+.scan-panel.deboard-mode .reticle::before,.scan-panel.deboard-mode .reticle::after,
+.scan-panel.deboard-mode .reticle span::before,.scan-panel.deboard-mode .reticle span::after{border-color:var(--deboard);}
+.scan-line{position:absolute;left:8%;right:8%;height:2px;background:linear-gradient(90deg,transparent,var(--beacon),transparent);animation:sweep 2.2s ease-in-out infinite;}
+.scan-panel.deboard-mode .scan-line{background:linear-gradient(90deg,transparent,var(--deboard),transparent);}
+@keyframes sweep{0%,100%{top:16%}50%{top:82%}}
+.scan-status{position:absolute;bottom:0;left:0;right:0;padding:7px 10px;font-family:var(--mono);font-size:10px;background:linear-gradient(to top,rgba(0,0,0,0.85),transparent);color:var(--paper);display:flex;justify-content:space-between;}
+.dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:#5b6a5e;margin-right:5px;vertical-align:-1px;}
+.dot.live{background:var(--beacon);animation:pulse 1.4s infinite;}
+.deboard-mode .dot.live{background:var(--deboard);}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(255,90,31,0.55)}70%{box-shadow:0 0 0 7px rgba(255,90,31,0)}100%{box-shadow:0 0 0 0 rgba(255,90,31,0)}}
+
+.controls{display:flex;gap:10px;margin-top:10px;}
+button{font-family:var(--mono);font-size:12px;letter-spacing:0.06em;text-transform:uppercase;padding:11px 14px;border-radius:2px;border:1px solid rgba(238,241,234,0.2);background:transparent;color:var(--paper);cursor:pointer;flex:1;}
+button.primary{background:var(--beacon);border-color:var(--beacon);color:#1a0d05;font-weight:600;}
+button.primary-deboard{background:var(--deboard);border-color:var(--deboard);color:#fff;font-weight:600;}
+button:disabled{opacity:0.35;cursor:not-allowed;}
+
+/* Counters */
+.counters{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px;}
+.counter-box{border:1px solid rgba(238,241,234,0.1);border-radius:2px;padding:10px;text-align:center;}
+.counter-box.board-box{border-color:rgba(255,90,31,0.25);}
+.counter-box.deboard-box{border-color:rgba(42,106,170,0.3);}
+.counter-label{font-family:var(--mono);font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:rgba(238,241,234,0.4);}
+.counter-value{font-family:var(--mono);font-weight:700;font-size:32px;line-height:1.1;margin-top:2px;}
+.board-box .counter-value{color:var(--beacon);}
+.deboard-box .counter-value{color:var(--deboard);}
+
+/* Log */
+.log-section{margin-top:18px;}
+.log-header{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;}
+.log-title{font-family:var(--mono);font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:rgba(238,241,234,0.45);}
+.log-meta{font-family:var(--mono);font-size:10px;color:rgba(238,241,234,0.3);}
+.log-row{display:grid;grid-template-columns:72px 1fr 60px;gap:10px;padding:8px 6px;border-bottom:1px solid rgba(238,241,234,0.07);font-family:var(--mono);font-size:12px;align-items:center;}
+.log-seq{font-size:14px;font-weight:700;text-align:center;padding:2px 6px;border-radius:2px;letter-spacing:0.04em;}
+.log-seq.board{color:var(--beacon);background:rgba(255,90,31,0.12);}
+.log-seq.deboard{color:var(--deboard);background:rgba(42,106,170,0.15);}
+.log-seq.dup{color:rgba(238,241,234,0.3);background:rgba(238,241,234,0.05);}
+.log-name{color:var(--paper);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;}
+.log-status{font-size:9px;text-transform:uppercase;letter-spacing:0.04em;text-align:right;}
+.log-status.ok{color:#7fbf8a;}
+.log-status.dup{color:#e8a87c;}
+.log-status.sending{color:#c7b25a;}
+.log-empty{font-family:var(--mono);font-size:11px;color:rgba(238,241,234,0.3);padding:14px 6px;border:1px dashed rgba(238,241,234,0.1);}
+
+/* Full-screen result overlay — shown immediately on scan */
+.result-overlay{position:fixed;inset:0;z-index:200;display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;}
+.result-overlay.show{display:flex;animation:fadein 0.2s ease;}
+.result-overlay.board-ov{background:#0c2010;}
+.result-overlay.deboard-ov{background:#0a1a2a;}
+.result-overlay.dup-ov{background:#1a100a;}
+@keyframes fadein{from{opacity:0}to{opacity:1}}
+.ov-icon{font-size:48px;margin-bottom:8px;}
+.ov-seq{font-family:var(--mono);font-size:80px;font-weight:700;line-height:1;margin-bottom:6px;}
+.result-overlay.board-ov .ov-seq{color:var(--beacon);}
+.result-overlay.deboard-ov .ov-seq{color:var(--deboard);}
+.result-overlay.dup-ov .ov-seq{color:rgba(238,241,234,0.3);}
+.ov-name{font-family:var(--mono);font-size:16px;color:rgba(238,241,234,0.75);margin-bottom:6px;}
+.ov-seat{font-family:var(--mono);font-size:13px;color:rgba(238,241,234,0.4);margin-bottom:18px;}
+.ov-badge{font-family:var(--mono);font-size:12px;letter-spacing:0.12em;text-transform:uppercase;font-weight:600;padding:6px 20px;border-radius:2px;margin-bottom:20px;}
+.result-overlay.board-ov .ov-badge{background:var(--beacon);color:#1a0d05;}
+.result-overlay.deboard-ov .ov-badge{background:var(--deboard);color:#fff;}
+.result-overlay.dup-ov .ov-badge{background:rgba(238,241,234,0.1);color:rgba(238,241,234,0.5);}
+.ov-bar{width:240px;height:3px;background:rgba(255,255,255,0.08);border-radius:2px;overflow:hidden;margin-bottom:8px;}
+.ov-fill{height:100%;width:0;border-radius:2px;}
+.result-overlay.board-ov .ov-fill{background:var(--beacon);}
+.result-overlay.deboard-ov .ov-fill{background:var(--deboard);}
+.result-overlay.dup-ov .ov-fill{background:rgba(238,241,234,0.2);}
+.ov-note{font-family:var(--mono);font-size:10px;color:rgba(238,241,234,0.2);letter-spacing:0.04em;}
+.ov-dismiss{margin-top:24px;font-family:var(--mono);font-size:15px;letter-spacing:0.08em;text-transform:uppercase;padding:16px 40px;border-radius:4px;border:2px solid rgba(238,241,234,0.6);background:rgba(238,241,234,0.08);color:var(--paper);cursor:pointer;flex:unset;font-weight:600;transition:background 0.15s;}
+
+.toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--paper);color:var(--ink);font-family:var(--mono);font-size:11px;padding:9px 14px;border-radius:2px;opacity:0;transition:all 0.25s ease;pointer-events:none;z-index:300;white-space:nowrap;box-shadow:0 6px 20px rgba(0,0,0,0.3);}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+</style>
+</head>
+<body>
+<header>
+  <div class="wordmark"><b>GATE LOG</b> · NH212</div>
+  <h1>Sequence Scanner</h1>
+  <div class="sub">PDF417 · IATA BCBP · AUTO-LOG</div>
+</header>
+<main>
+  <div class="setup-banner" id="setupBanner">
+    <strong>Paste your Apps Script URL:</strong>
+    <input id="endpointInput" placeholder="https://script.google.com/macros/s/.../exec" type="url">
+    <button onclick="saveEndpoint()">Save URL</button>
+  </div>
+
+  <div class="mode-toggle">
+    <button class="mode-btn active-board" id="boardModeBtn" onclick="setMode('board')">&#9992; Boarding</button>
+    <div class="mode-divider"></div>
+    <button class="mode-btn" id="deboardModeBtn" onclick="setMode('deboard')">&#11015; Deboarding</button>
+  </div>
+
+  <div class="scan-panel" id="scanPanel">
+    <video id="video" muted playsinline></video>
+    <div class="mode-overlay board" id="modeOverlay">Boarding</div>
+    <div class="reticle"><span></span></div>
+    <div class="scan-line"></div>
+    <div class="scan-status">
+      <span><span class="dot" id="liveDot"></span><span id="statusText">Camera off</span></span>
+      <span id="hintText">Tap start</span>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button id="startBtn" class="primary" onclick="startScanning()">Start camera</button>
+    <button id="stopBtn" disabled onclick="stopScanning()">Stop</button>
+  </div>
+
+  <div class="counters">
+    <div class="counter-box board-box">
+      <div class="counter-label">On board</div>
+      <div class="counter-value" id="boardCount">0</div>
+    </div>
+    <div class="counter-box deboard-box">
+      <div class="counter-label">Deboarded</div>
+      <div class="counter-value" id="deboardCount">0</div>
+    </div>
+  </div>
+
+  <div class="log-section">
+    <div class="log-header">
+      <span class="log-title">Session log</span>
+      <span class="log-meta" id="logMeta"></span>
+    </div>
+    <div id="logList"><div class="log-empty">No scans yet.</div></div>
+  </div>
+</main>
+
+<!-- Full-screen result overlay -->
+<div class="result-overlay" id="resultOverlay">
+  <div class="ov-icon" id="ovIcon">&#9992;</div>
+  <div class="ov-seq" id="ovSeq">000</div>
+  <div class="ov-name" id="ovName"></div>
+  <div class="ov-seat" id="ovSeat"></div>
+  <div class="ov-badge" id="ovBadge">Boarded</div>
+  <div class="ov-note" id="ovNote">Logging to sheet...</div>
+  <button class="ov-dismiss" id="nextBtn" onclick="dismissOverlay()">&#9654; Next passenger</button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://unpkg.com/@zxing/library@latest"></script>
+<script src="https://unpkg.com/@zxing/browser@latest"></script>
+<script>
+(function(){
+"use strict";
+
+// ── Endpoint ──────────────────────────────────────────────────────
+let endpoint = localStorage.getItem("gatelog_ep") || "";
+const banner  = document.getElementById("setupBanner");
+const epInput = document.getElementById("endpointInput");
+if (endpoint){ epInput.value = endpoint; banner.style.display = "none"; }
+
+window.saveEndpoint = function(){
+  const v = epInput.value.trim();
+  if (!v.startsWith("http")){ toast("Paste a valid URL first"); return; }
+  endpoint = v;
+  localStorage.setItem("gatelog_ep", v);
+  banner.style.display = "none";
+  toast("Saved");
+};
+
+// ── Mode ──────────────────────────────────────────────────────────
+let currentMode = "board";
+window.setMode = function(mode){
+  currentMode = mode;
+  const isBoard = mode === "board";
+  document.getElementById("boardModeBtn").className  = "mode-btn" + (isBoard ? " active-board" : "");
+  document.getElementById("deboardModeBtn").className = "mode-btn" + (!isBoard ? " active-deboard" : "");
+  const panel = document.getElementById("scanPanel");
+  panel.classList.toggle("deboard-mode", !isBoard);
+  const ov = document.getElementById("modeOverlay");
+  ov.textContent = isBoard ? "Boarding" : "Deboarding";
+  ov.className = "mode-overlay " + mode;
+  document.getElementById("startBtn").className = isBoard ? "primary" : "primary-deboard";
+};
+
+// ── Toast ─────────────────────────────────────────────────────────
+let toastTimer;
+function toast(msg){
+  const t = document.getElementById("toast");
+  t.textContent = msg; t.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove("show"), 2600);
+}
+
+// ── IATA BCBP parser ──────────────────────────────────────────────
+function parseBoardingPass(raw){
+  if (!raw || raw.length < 23) return null;
+  if (raw[0] !== "M" && raw[0] !== "S") return null;
+  const name = raw.slice(2, 22).trim();
+  let i = 23;
+  const take = n => { const s = raw.slice(i,i+n); i+=n; return s; };
+  const pnr     = take(7).trim();
+  const from    = take(3).trim();
+  const to      = take(3).trim();
+  const carrier = take(3).trim();
+  const fltNum  = take(5).trim();
+  take(3); // julian date
+  take(1); // compartment
+  const seat    = take(4).trim();
+  const seqRaw  = take(5).trim();
+  const seqNum  = parseInt(seqRaw, 10);
+  const seq     = isNaN(seqNum) ? seqRaw : String(seqNum).padStart(3, "0");
+  return {
+    passengerName: name,
+    pnr, from, to,
+    flightNumber: (carrier + fltNum).replace(/\s+/g,""),
+    seat, sequenceNumber: seq,
+    sequenceValid: !isNaN(seqNum)
+  };
+}
+
+// ── Camera ────────────────────────────────────────────────────────
+const video    = document.getElementById("video");
+const liveDot  = document.getElementById("liveDot");
+const statusTx = document.getElementById("statusText");
+const hintTx   = document.getElementById("hintText");
+let codeReader, lastRaw = "", lastAt = 0;
+let overlayVisible = false;
+
+function setLive(on, label){ liveDot.classList.toggle("live",on); statusTx.textContent = label; }
+
+window.startScanning = async function(){
+  if (!window.ZXingBrowser || !window.ZXing){ toast("Scanner library not loaded — check connection"); return; }
+  try {
+    const hints = new Map();
+    hints.set(window.ZXing.DecodeHintType.POSSIBLE_FORMATS,[
+      window.ZXing.BarcodeFormat.PDF_417,
+      window.ZXing.BarcodeFormat.QR_CODE,
+      window.ZXing.BarcodeFormat.CODE_128
+    ]);
+    hints.set(window.ZXing.DecodeHintType.TRY_HARDER, true);
+    codeReader = new window.ZXingBrowser.BrowserMultiFormatReader(hints);
+    document.getElementById("startBtn").disabled = true;
+    document.getElementById("stopBtn").disabled  = false;
+    setLive(true, "Scanning..."); hintTx.textContent = "Hold barcode steady";
+    try {
+      const p = await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}});
+      p.getTracks().forEach(t=>t.stop());
+    } catch(e){}
+    const devices = await window.ZXingBrowser.BrowserCodeReader.listVideoInputDevices();
+    const backCam = devices.find(d=>/back|rear|environment/i.test(d.label))||devices[devices.length-1];
+    await codeReader.decodeFromVideoDevice(backCam?backCam.deviceId:undefined, video, result => {
+      if (!result || overlayVisible) return;
+      const text = result.getText(), now = Date.now();
+      if (text === lastRaw && (now - lastAt) < 8000) return; // 8s cooldown per barcode
+      lastRaw = text; lastAt = now;
+      handleDecoded(text);
+    });
+  } catch(e){
+    console.error(e); setLive(false,"Camera error"); hintTx.textContent = "";
+    toast(e.name==="NotAllowedError"?"Camera permission denied":"Couldn't start camera");
+    document.getElementById("startBtn").disabled = false;
+    document.getElementById("stopBtn").disabled  = true;
+  }
+};
+
+window.stopScanning = function(){
+  if (codeReader){ try{ codeReader.reset(); }catch(e){} }
+  setLive(false,"Camera off"); hintTx.textContent = "Tap start";
+  document.getElementById("startBtn").disabled = false;
+  document.getElementById("stopBtn").disabled  = true;
+};
+
+// ── Overlay ───────────────────────────────────────────────────────
+const resultOverlay = document.getElementById("resultOverlay");
+const ovSeq   = document.getElementById("ovSeq");
+const ovName  = document.getElementById("ovName");
+const ovSeat  = document.getElementById("ovSeat");
+const ovBadge = document.getElementById("ovBadge");
+const ovIcon  = document.getElementById("ovIcon");
+
+function showOverlay(seq, name, seat, type, label, isDup){
+  ovSeq.textContent  = seq;
+  ovName.textContent = name;
+  ovSeat.textContent = seat ? "Seat " + seat : "";
+  ovBadge.textContent = label;
+  const cls = isDup ? "dup-ov" : (type === "Board" ? "board-ov" : "deboard-ov");
+  resultOverlay.className = "result-overlay show " + cls;
+  ovIcon.textContent = isDup ? "26A0" : (type === "Board" ? "\u2708" : "\u2B07");
+  // Animate bar
+  overlayVisible = true;
+  // No progress bar animation — manual dismiss
+  // No auto-dismiss — staff tap Next to proceed
+}
+
+window.dismissOverlay = function(){
+  resultOverlay.className = "result-overlay";
+  overlayVisible = false;
+  lastRaw = ""; lastAt = 0; // allow same pass to be scanned again after dismiss
+};
+
+// ── Tracking sets ─────────────────────────────────────────────────
+const scannedBoard   = new Set();
+const scannedDeboard = new Set();
+
+// ── Handle decoded barcode — auto-log immediately ─────────────────
+function handleDecoded(rawText){
+  const p = parseBoardingPass(rawText);
+  if (!p){ toast("Not a recognised boarding pass"); return; }
+  if (navigator.vibrate){ try{ navigator.vibrate(40); }catch(e){} }
+
+  const type = currentMode === "board" ? "Board" : "Deboard";
+  const alreadyBoarded   = scannedBoard.has(p.sequenceNumber);
+  const alreadyDeboarded = scannedDeboard.has(p.sequenceNumber);
+  const isReboard = type === "Board" && alreadyBoarded && alreadyDeboarded;
+  const isDup     = type === "Board"
+    ? (alreadyBoarded && !alreadyDeboarded)
+    : alreadyDeboarded;
+
+  // Determine label
+  let label, statusClass;
+  if (isDup){
+    label = type === "Board" ? "Already boarded" : "Already deboarded";
+    statusClass = "dup";
+  } else if (isReboard){
+    label = "Re-boarded";
+    statusClass = "ok";
+  } else {
+    label = type === "Board" ? "Boarded" : "Deboarded";
+    statusClass = "sending";
+  }
+
+  // Show overlay immediately — no button press needed
+  showOverlay(p.sequenceNumber, p.passengerName, p.seat, type, label, isDup);
+
+  // Update tracking sets
+  if (!isDup){
+    if (type === "Board"){
+      scannedBoard.add(p.sequenceNumber);
+      if (isReboard) scannedDeboard.delete(p.sequenceNumber);
+    } else {
+      scannedDeboard.add(p.sequenceNumber);
+    }
+  }
+
+  // Add to session log
+  const entry = {
+    sequenceNumber: p.sequenceNumber,
+    passengerName:  p.passengerName,
+    type, statusClass,
+    statusLabel: isDup ? "Duplicate" : "Sending..."
+  };
+  entries.unshift(entry);
+  renderLog();
+
+  // Fire to sheet (skip if duplicate)
+  if (!isDup && endpoint){
+    const params = new URLSearchParams({
+      sequenceNumber: p.sequenceNumber,
+      passengerName:  p.passengerName,
+      flightNumber:   p.flightNumber || "",
+      seat:           p.seat || "",
+      pnr:            p.pnr || "",
+      type,
+      timestamp:      new Date().toISOString()
+    });
+    const win = window.open(endpoint + "?" + params.toString(), "_blank");
+    setTimeout(() => {
+      entry.statusLabel = isReboard ? "Re-boarded" : (type === "Board" ? "Boarded" : "Deboarded");
+      entry.statusClass = "ok";
+      renderLog();
+      // Update overlay note to confirm logged
+      const ovN = document.getElementById("ovNote");
+      if (ovN) ovN.textContent = "Logged to sheet";
+      if (win){ try{ win.close(); }catch(e){} }
+    }, 2500);
+  } else if (isDup){
+    entry.statusLabel = "Duplicate";
+  } else if (!endpoint){
+    entry.statusLabel = "No endpoint";
+    entry.statusClass = "dup";
+    renderLog();
+  }
+}
+
+// ── Session log + counts ──────────────────────────────────────────
+const logList      = document.getElementById("logList");
+const logMeta      = document.getElementById("logMeta");
+const boardCountEl = document.getElementById("boardCount");
+const deboardCountEl = document.getElementById("deboardCount");
+let entries = [];
+
+function renderLog(){
+  // Count unique pax current state (last valid action per pax)
+  const paxState = {};
+  [...entries].reverse().forEach(e => {
+    if (e.statusClass === "dup") return;
+    paxState[e.sequenceNumber] = e.type;
+  });
+  const nBoard   = Object.values(paxState).filter(t => t === "Board").length;
+  const nDeboard = Object.values(paxState).filter(t => t === "Deboard").length;
+  boardCountEl.textContent   = String(nBoard);
+  deboardCountEl.textContent = String(nDeboard);
+
+  const boardedSeqs = Object.entries(paxState)
+    .filter(([,t]) => t === "Board")
+    .map(([s]) => parseInt(s))
+    .filter(n => !isNaN(n));
+  const maxSeq = boardedSeqs.length ? Math.max(...boardedSeqs) : null;
+  logMeta.textContent = maxSeq !== null ? "highest: " + String(maxSeq).padStart(3,"0") : "";
+
+  if (!entries.length){ logList.innerHTML = '<div class="log-empty">No scans yet.</div>'; return; }
+  logList.innerHTML = entries.map(e => {
+    const seqClass = e.statusClass === "dup" ? "dup" : (e.type === "Board" ? "board" : "deboard");
+    return `<div class="log-row">
+      <span class="log-seq ${seqClass}">${e.sequenceNumber||"—"}</span>
+      <span class="log-name">${e.passengerName||"—"}</span>
+      <span class="log-status ${e.statusClass}">${e.statusLabel}</span>
+    </div>`;
+  }).join("");
+}
+
+})();
+</script>
+</body>
+</html>
