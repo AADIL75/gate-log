@@ -250,7 +250,8 @@ function parseBoardingPass(raw){
   const fltNum  = take(5).trim();
   take(3); // julian date
   take(1); // compartment
-  const seat    = take(4).trim();
+  const seatRaw = take(4).trim();
+  const seat = seatRaw.replace(/^0+(\d)/, '$1'); // strip leading zeros: 015A -> 15A
   const seqRaw  = take(5).trim();
   const seqNum  = parseInt(seqRaw, 10);
   const seq     = isNaN(seqNum) ? seqRaw : String(seqNum).padStart(3, "0");
