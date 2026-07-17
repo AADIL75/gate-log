@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Gate Log NH212</title>
+<title>Gate Log — NH212</title>
 <style>
 :root{
   --ink:#0c1a17;--paper:#eef1ea;--runway:#1f3d33;
@@ -131,7 +131,10 @@ button:disabled{opacity:0.35;cursor:not-allowed;}
       <h1>Sequence Scanner</h1>
       <div class="sub">PDF417 · IATA BCBP · AUTO-LOG</div>
     </div>
-    <button onclick="editEndpoint()" style="font-family:var(--mono);font-size:9px;letter-spacing:0.08em;text-transform:uppercase;padding:6px 10px;border-radius:2px;border:1px solid rgba(238,241,234,0.2);background:transparent;color:rgba(238,241,234,0.4);cursor:pointer;flex:unset;margin-top:4px;">Edit URL</button>
+    <div style="display:flex;flex-direction:column;gap:5px;margin-top:4px;">
+      <button onclick="editEndpoint()" style="font-family:var(--mono);font-size:9px;letter-spacing:0.08em;text-transform:uppercase;padding:6px 10px;border-radius:2px;border:1px solid rgba(238,241,234,0.2);background:transparent;color:rgba(238,241,234,0.4);cursor:pointer;flex:unset;">Edit URL</button>
+      <button onclick="resetAll()" style="font-family:var(--mono);font-size:9px;letter-spacing:0.08em;text-transform:uppercase;padding:6px 10px;border-radius:2px;border:1px solid rgba(196,72,22,0.4);background:transparent;color:rgba(196,72,22,0.7);cursor:pointer;flex:unset;">Reset</button>
+    </div>
   </div>
 </header>
 <main>
@@ -214,6 +217,23 @@ window.editEndpoint = function(){
   epInput.value = "";
   banner.style.display = "block";
   banner.scrollIntoView({behavior:"smooth"});
+};
+
+window.resetAll = function(){
+  if (!confirm("Reset session log and clear the sheet? This cannot be undone.")) return;
+  // Clear session
+  entries = [];
+  scannedBoard.clear();
+  scannedDeboard.clear();
+  lastRaw = ""; lastAt = 0;
+  renderLog();
+  dismissOverlay();
+  toast("Session cleared");
+  // Clear sheet via Apps Script
+  if (endpoint) {
+    const params = new URLSearchParams({ action: "reset" });
+    window.open(endpoint + "?" + params.toString(), "_blank");
+  }
 };
 
 window.saveEndpoint = function(){
