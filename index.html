@@ -228,13 +228,17 @@ window.resetAll = function(){
   lastRaw = ""; lastAt = 0;
   renderLog();
   dismissOverlay();
-  toast("Session cleared");
-  // Clear sheet silently via image request — no new tab needed for reset
+  // Restart camera so it doesn't freeze after reset
+  stopScanning();
+  setTimeout(() => startScanning(), 500);
+  // Clear sheet via window.open — same method that works for logging
   if (endpoint) {
     const params = new URLSearchParams({ action: "reset" });
-    const img = new Image();
-    img.src = endpoint + "?" + params.toString();
+    const win = window.open(endpoint + "?" + params.toString(), "_blank");
+    setTimeout(() => { if (win){ try{ win.close(); }catch(e){} } }, 3000);
     toast("Session and sheet cleared");
+  } else {
+    toast("Session cleared — no endpoint set");
   }
 };
 
