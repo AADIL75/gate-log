@@ -229,10 +229,12 @@ window.resetAll = function(){
   renderLog();
   dismissOverlay();
   toast("Session cleared");
-  // Clear sheet via Apps Script
+  // Clear sheet silently via image request — no new tab needed for reset
   if (endpoint) {
     const params = new URLSearchParams({ action: "reset" });
-    window.open(endpoint + "?" + params.toString(), "_blank");
+    const img = new Image();
+    img.src = endpoint + "?" + params.toString();
+    toast("Session and sheet cleared");
   }
 };
 
