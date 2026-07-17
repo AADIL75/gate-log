@@ -121,6 +121,24 @@ button:disabled{opacity:0.35;cursor:not-allowed;}
 
 .toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--paper);color:var(--ink);font-family:var(--mono);font-size:11px;padding:9px 14px;border-radius:2px;opacity:0;transition:all 0.25s ease;pointer-events:none;z-index:300;white-space:nowrap;box-shadow:0 6px 20px rgba(0,0,0,0.3);}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* Agent banner */
+.agent-banner{background:rgba(31,61,51,0.6);border:1px solid rgba(238,241,234,0.1);border-radius:2px;padding:10px 14px;margin-bottom:12px;display:flex;align-items:center;gap:10px;}
+.agent-label{font-family:var(--mono);font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:rgba(238,241,234,0.4);white-space:nowrap;}
+.agent-input{flex:1;font-family:var(--mono);font-size:12px;background:transparent;border:none;border-bottom:1px solid rgba(238,241,234,0.2);color:var(--paper);padding:2px 4px;outline:none;}
+.agent-input::placeholder{color:rgba(238,241,234,0.25);}
+.agent-name-display{font-family:var(--mono);font-size:12px;color:var(--beacon);font-weight:600;}
+
+/* Reset modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:400;display:none;align-items:center;justify-content:center;padding:24px;}
+.modal-overlay.show{display:flex;animation:fadein 0.2s ease;}
+.modal-box{background:#1a0a0a;border:1px solid rgba(196,72,22,0.4);border-radius:4px;padding:28px 24px;max-width:300px;width:100%;text-align:center;}
+.modal-icon{font-size:40px;margin-bottom:12px;}
+.modal-title{font-family:var(--mono);font-size:20px;font-weight:700;color:var(--beacon-dim);margin-bottom:8px;}
+.modal-body{font-family:var(--mono);font-size:12px;color:rgba(238,241,234,0.55);line-height:1.6;margin-bottom:24px;}
+.modal-buttons{display:flex;gap:10px;}
+.modal-cancel{flex:1;font-family:var(--mono);font-size:11px;letter-spacing:0.08em;text-transform:uppercase;padding:12px;border-radius:2px;border:1px solid rgba(238,241,234,0.2);background:transparent;color:rgba(238,241,234,0.5);cursor:pointer;}
+.modal-confirm{flex:1;font-family:var(--mono);font-size:11px;letter-spacing:0.08em;text-transform:uppercase;padding:12px;border-radius:2px;border:none;background:var(--beacon-dim);color:#fff;font-weight:600;cursor:pointer;}
 </style>
 </head>
 <body>
@@ -142,6 +160,11 @@ button:disabled{opacity:0.35;cursor:not-allowed;}
     <strong>Paste your Apps Script URL:</strong>
     <input id="endpointInput" placeholder="https://script.google.com/macros/s/.../exec" type="url">
     <button onclick="saveEndpoint()">Save URL</button>
+  </div>
+
+  <div class="agent-banner">
+    <span class="agent-label">Agent</span>
+    <input class="agent-input" id="agentInput" placeholder="Enter your name..." maxlength="30" oninput="saveAgent()">
   </div>
 
   <div class="mode-toggle">
@@ -186,6 +209,19 @@ button:disabled{opacity:0.35;cursor:not-allowed;}
   </div>
 </main>
 
+<!-- Reset confirmation modal -->
+<div class="modal-overlay" id="resetModal">
+  <div class="modal-box">
+    <div class="modal-icon">&#9888;</div>
+    <div class="modal-title">Reset?</div>
+    <div class="modal-body">This will clear the session log and delete all rows from the Google Sheet.<br>This cannot be undone.</div>
+    <div class="modal-buttons">
+      <button class="modal-cancel" onclick="closeResetModal()">Cancel</button>
+      <button class="modal-confirm" onclick="confirmReset()">Reset</button>
+    </div>
+  </div>
+</div>
+
 <!-- Full-screen result overlay -->
 <div class="result-overlay" id="resultOverlay">
   <div class="ov-icon" id="ovIcon">&#9992;</div>
@@ -219,28 +255,7 @@ window.editEndpoint = function(){
   banner.scrollIntoView({behavior:"smooth"});
 };
 
-window.resetAll = function(){
-  if (!confirm("Reset session log and clear the sheet? This cannot be undone.")) return;
-  // Clear session
-  entries = [];
-  scannedBoard.clear();
-  scannedDeboard.clear();
-  lastRaw = ""; lastAt = 0;
-  renderLog();
-  dismissOverlay();
-  // Restart camera so it doesn't freeze after reset
-  stopScanning();
-  setTimeout(() => startScanning(), 500);
-  // Clear sheet via window.open — same method that works for logging
-  if (endpoint) {
-    const params = new URLSearchParams({ action: "reset" });
-    const win = window.open(endpoint + "?" + params.toString(), "_blank");
-    setTimeout(() => { if (win){ try{ win.close(); }catch(e){} } }, 3000);
-    toast("Session and sheet cleared");
-  } else {
-    toast("Session cleared — no endpoint set");
-  }
-};
+
 
 window.saveEndpoint = function(){
   const v = epInput.value.trim();
@@ -249,6 +264,47 @@ window.saveEndpoint = function(){
   localStorage.setItem("gatelog_ep", v);
   banner.style.display = "none";
   toast("Saved");
+};
+
+// ── Agent ──────────────────────────────────────────────────────────
+let agentName = localStorage.getItem("gatelog_agent") || "";
+const agentInput = document.getElementById("agentInput");
+if (agentName) agentInput.value = agentName;
+
+window.saveAgent = function(){
+  agentName = agentInput.value.trim();
+  localStorage.setItem("gatelog_agent", agentName);
+};
+
+// ── Reset modal ────────────────────────────────────────────────────
+const resetModal = document.getElementById("resetModal");
+
+window.resetAll = function(){
+  resetModal.classList.add("show");
+};
+
+window.closeResetModal = function(){
+  resetModal.classList.remove("show");
+};
+
+window.confirmReset = function(){
+  resetModal.classList.remove("show");
+  entries = [];
+  scannedBoard.clear();
+  scannedDeboard.clear();
+  lastRaw = ""; lastAt = 0;
+  renderLog();
+  dismissOverlay();
+  stopScanning();
+  setTimeout(() => startScanning(), 500);
+  if (endpoint) {
+    const params = new URLSearchParams({ action: "reset" });
+    const win = window.open(endpoint + "?" + params.toString(), "_blank");
+    setTimeout(() => { if (win){ try{ win.close(); }catch(e){} } }, 3000);
+    toast("Session and sheet cleared");
+  } else {
+    toast("Session cleared — no endpoint set");
+  }
 };
 
 // ── Mode ──────────────────────────────────────────────────────────
@@ -446,6 +502,7 @@ function handleDecoded(rawText){
       seat:           p.seat || "",
       pnr:            p.pnr || "",
       type,
+      agent:          agentName || "Unknown",
       timestamp:      new Date().toISOString()
     });
     const win = window.open(endpoint + "?" + params.toString(), "_blank");
