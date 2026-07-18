@@ -14,31 +14,25 @@
 }
 *{box-sizing:border-box;margin:0;padding:0;}
 html,body{background:var(--ink);color:var(--paper);font-family:var(--sans);min-height:100vh;display:flex;flex-direction:column;}
-
 header{padding:14px 18px 10px;border-bottom:1px solid rgba(238,241,234,0.1);}
 .wordmark{font-family:var(--mono);font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:var(--beacon);}
 .wordmark b{color:var(--paper);}
 h1{font-family:var(--mono);font-weight:600;font-size:clamp(18px,5vw,24px);margin-top:3px;}
 .sub{font-family:var(--mono);font-size:9px;color:rgba(238,241,234,0.4);letter-spacing:0.05em;margin-top:3px;}
-
 main{flex:1;padding:12px 14px 70px;max-width:640px;width:100%;margin:0 auto;}
-
 .setup-banner{border:1px solid var(--beacon-dim);background:rgba(255,90,31,0.08);font-family:var(--mono);font-size:12px;line-height:1.6;padding:12px 14px;margin-bottom:12px;border-radius:2px;}
 .setup-banner input{width:100%;font-family:var(--mono);font-size:11px;padding:8px 10px;background:rgba(0,0,0,0.3);border:1px solid rgba(238,241,234,0.2);color:var(--paper);border-radius:2px;margin:6px 0;}
 .setup-banner button{width:100%;font-family:var(--mono);font-size:12px;letter-spacing:0.06em;text-transform:uppercase;padding:10px;border-radius:2px;border:none;background:var(--beacon);color:#1a0d05;font-weight:600;cursor:pointer;}
-
 .not-issued-bar{background:rgba(90,64,0,0.15);border:1px solid rgba(90,64,0,0.4);border-radius:2px;padding:12px 14px;margin-bottom:12px;}
 .ni-label{font-family:var(--mono);font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#c7b25a;font-weight:600;margin-bottom:4px;}
 .ni-hint{font-family:var(--mono);font-size:10px;color:rgba(238,241,234,0.35);margin-bottom:6px;}
 .ni-input{width:100%;font-family:var(--mono);font-size:11px;padding:8px 10px;background:rgba(0,0,0,0.3);border:1px solid rgba(238,241,234,0.2);color:var(--paper);border-radius:2px;margin-bottom:8px;}
 .ni-btn{width:100%;font-family:var(--mono);font-size:11px;letter-spacing:0.06em;text-transform:uppercase;padding:9px;border-radius:2px;border:none;background:#5a4000;color:#fff2cc;font-weight:600;cursor:pointer;}
-
 .mode-toggle{display:flex;gap:0;margin-bottom:12px;border:1px solid rgba(238,241,234,0.15);border-radius:2px;overflow:hidden;}
 .mode-btn{flex:1;font-family:var(--mono);font-size:11px;letter-spacing:0.08em;text-transform:uppercase;padding:10px;border:none;background:transparent;color:rgba(238,241,234,0.45);cursor:pointer;}
 .mode-btn.active-board{background:var(--beacon);color:#1a0d05;font-weight:600;}
 .mode-btn.active-deboard{background:var(--deboard);color:#fff;font-weight:600;}
 .mode-divider{width:1px;background:rgba(238,241,234,0.15);}
-
 .scan-panel{border:1px solid rgba(238,241,234,0.15);border-radius:2px;overflow:hidden;background:#000;position:relative;aspect-ratio:4/3;transition:border-color 0.3s;}
 .scan-panel.deboard-mode{border-color:var(--deboard);}
 #video{width:100%;height:100%;object-fit:cover;display:block;}
@@ -61,13 +55,11 @@ main{flex:1;padding:12px 14px 70px;max-width:640px;width:100%;margin:0 auto;}
 .dot.live{background:var(--beacon);animation:pulse 1.4s infinite;}
 .deboard-mode .dot.live{background:var(--deboard);}
 @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(255,90,31,0.55)}70%{box-shadow:0 0 0 7px rgba(255,90,31,0)}100%{box-shadow:0 0 0 0 rgba(255,90,31,0)}}
-
 .controls{display:flex;gap:10px;margin-top:10px;}
 button{font-family:var(--mono);font-size:12px;letter-spacing:0.06em;text-transform:uppercase;padding:11px 14px;border-radius:2px;border:1px solid rgba(238,241,234,0.2);background:transparent;color:var(--paper);cursor:pointer;flex:1;}
 button.primary{background:var(--beacon);border-color:var(--beacon);color:#1a0d05;font-weight:600;}
 button.primary-deboard{background:var(--deboard);border-color:var(--deboard);color:#fff;font-weight:600;}
 button:disabled{opacity:0.35;cursor:not-allowed;}
-
 .counters{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px;}
 .counter-box{border:1px solid rgba(238,241,234,0.1);border-radius:2px;padding:10px;text-align:center;}
 .counter-box.board-box{border-color:rgba(255,90,31,0.25);}
@@ -76,7 +68,6 @@ button:disabled{opacity:0.35;cursor:not-allowed;}
 .counter-value{font-family:var(--mono);font-weight:700;font-size:32px;line-height:1.1;margin-top:2px;}
 .board-box .counter-value{color:var(--beacon);}
 .deboard-box .counter-value{color:var(--deboard);}
-
 .log-section{margin-top:18px;}
 .log-header{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;}
 .log-title{font-family:var(--mono);font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:rgba(238,241,234,0.45);}
@@ -85,43 +76,31 @@ button:disabled{opacity:0.35;cursor:not-allowed;}
 .log-seq{font-size:15px;font-weight:700;text-align:center;padding:3px 6px;border-radius:3px;letter-spacing:0.06em;}
 .log-seq.board{color:#fff;background:var(--beacon);}
 .log-seq.deboard{color:#fff;background:var(--deboard);}
-.log-seq.dup{color:rgba(238,241,234,0.3);background:rgba(238,241,234,0.05);}
-.log-seq.error{color:#fff;background:#8b0000;}
+.log-seq.dup{color:rgba(238,241,234,0.4);background:rgba(238,241,234,0.08);}
 .log-name{color:var(--paper);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;}
 .log-status{font-size:9px;text-transform:uppercase;letter-spacing:0.04em;text-align:right;}
 .log-status.ok{color:#7fbf8a;}
 .log-status.dup{color:#e8a87c;}
-.log-status.sending{color:#c7b25a;}
-.log-status.error{color:#d6735c;}
 .log-empty{font-family:var(--mono);font-size:11px;color:rgba(238,241,234,0.3);padding:14px 6px;border:1px dashed rgba(238,241,234,0.1);}
-
-/* Result overlay */
 .result-overlay{position:fixed;inset:0;z-index:200;display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;}
-.result-overlay.show{display:flex;animation:fadein 0.2s ease;}
+.result-overlay.show{display:flex;animation:fadein 0.15s ease;}
 .result-overlay.board-ov{background:#0c2010;}
 .result-overlay.deboard-ov{background:#0a1a2a;}
-.result-overlay.dup-ov{background:#1a0a00;}
-.result-overlay.error-ov{background:#1a0000;}
-.result-overlay.sending-ov{background:#0c1a17;}
+.result-overlay.dup-ov{background:#1a0800;}
 @keyframes fadein{from{opacity:0}to{opacity:1}}
-.ov-icon{font-size:48px;margin-bottom:8px;}
+.ov-icon{font-size:48px;margin-bottom:6px;}
 .ov-seq{font-family:var(--mono);font-size:80px;font-weight:700;line-height:1;margin-bottom:6px;}
 .result-overlay.board-ov .ov-seq{color:var(--beacon);}
 .result-overlay.deboard-ov .ov-seq{color:var(--deboard);}
-.result-overlay.dup-ov .ov-seq,.result-overlay.error-ov .ov-seq{color:rgba(238,241,234,0.4);}
-.result-overlay.sending-ov .ov-seq{color:rgba(238,241,234,0.3);}
-.ov-name{font-family:var(--mono);font-size:16px;color:rgba(238,241,234,0.75);margin-bottom:6px;}
+.result-overlay.dup-ov .ov-seq{color:rgba(238,241,234,0.35);}
+.ov-name{font-family:var(--mono);font-size:16px;color:rgba(238,241,234,0.75);margin-bottom:4px;}
 .ov-seat{font-family:var(--mono);font-size:13px;color:rgba(238,241,234,0.4);margin-bottom:16px;}
-.ov-badge{font-family:var(--mono);font-size:12px;letter-spacing:0.12em;text-transform:uppercase;font-weight:600;padding:6px 20px;border-radius:2px;margin-bottom:8px;}
+.ov-badge{font-family:var(--mono);font-size:13px;letter-spacing:0.12em;text-transform:uppercase;font-weight:600;padding:7px 22px;border-radius:2px;margin-bottom:8px;}
 .result-overlay.board-ov .ov-badge{background:var(--beacon);color:#1a0d05;}
 .result-overlay.deboard-ov .ov-badge{background:var(--deboard);color:#fff;}
-.result-overlay.dup-ov .ov-badge{background:rgba(255,90,31,0.2);color:var(--beacon);}
-.result-overlay.error-ov .ov-badge{background:#8b0000;color:#fff;}
-.result-overlay.sending-ov .ov-badge{background:rgba(238,241,234,0.1);color:rgba(238,241,234,0.5);}
-.ov-note{font-family:var(--mono);font-size:11px;color:rgba(238,241,234,0.35);margin-bottom:20px;line-height:1.5;}
+.result-overlay.dup-ov .ov-badge{background:#8b2000;color:#fff;}
+.ov-note{font-family:var(--mono);font-size:11px;color:rgba(238,241,234,0.3);margin-bottom:22px;}
 .ov-dismiss{font-family:var(--mono);font-size:15px;letter-spacing:0.08em;text-transform:uppercase;padding:16px 40px;border-radius:4px;border:2px solid rgba(238,241,234,0.5);background:rgba(238,241,234,0.08);color:var(--paper);cursor:pointer;font-weight:600;flex:unset;}
-
-/* Reset modal */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:400;display:none;align-items:center;justify-content:center;padding:24px;}
 .modal-overlay.show{display:flex;animation:fadein 0.2s ease;}
 .modal-box{background:#1a0a0a;border:1px solid rgba(196,72,22,0.4);border-radius:4px;padding:28px 24px;max-width:300px;width:100%;text-align:center;}
@@ -131,7 +110,6 @@ button:disabled{opacity:0.35;cursor:not-allowed;}
 .modal-buttons{display:flex;gap:10px;}
 .modal-cancel{flex:1;font-family:var(--mono);font-size:11px;letter-spacing:0.08em;text-transform:uppercase;padding:12px;border-radius:2px;border:1px solid rgba(238,241,234,0.2);background:transparent;color:rgba(238,241,234,0.5);cursor:pointer;}
 .modal-confirm{flex:1;font-family:var(--mono);font-size:11px;letter-spacing:0.08em;text-transform:uppercase;padding:12px;border-radius:2px;border:none;background:var(--beacon-dim);color:#fff;font-weight:600;cursor:pointer;}
-
 .toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--paper);color:var(--ink);font-family:var(--mono);font-size:11px;padding:9px 14px;border-radius:2px;opacity:0;transition:all 0.25s ease;pointer-events:none;z-index:500;white-space:nowrap;box-shadow:0 6px 20px rgba(0,0,0,0.3);}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 </style>
@@ -153,29 +131,25 @@ button:disabled{opacity:0.35;cursor:not-allowed;}
     </div>
   </div>
 </header>
-
 <main>
   <div class="setup-banner" id="setupBanner">
-    <strong>Setup — paste your Apps Script URL and enter agent name:</strong>
+    <strong>Setup:</strong>
     <input id="endpointInput" placeholder="https://script.google.com/macros/s/.../exec" type="url">
-    <div style="margin-top:4px;font-size:11px;color:rgba(238,241,234,0.5);">Your name (logged with every scan):</div>
+    <div style="margin-top:4px;font-size:11px;color:rgba(238,241,234,0.5);">Your name:</div>
     <input id="agentInput" placeholder="Enter your name" maxlength="30">
     <button onclick="saveEndpoint()">Save</button>
   </div>
-
   <div class="not-issued-bar">
     <div class="ni-label">Not Issued Seq Numbers</div>
-    <div class="ni-hint">Enter numbers or ranges e.g. 180-212, 195, 200</div>
-    <input class="ni-input" id="notIssuedInput" placeholder="e.g. 180-212, 195, 200" type="text">
+    <div class="ni-hint">e.g. 180-212, 195, 200</div>
+    <input class="ni-input" id="notIssuedInput" placeholder="e.g. 180-212, 195, 200">
     <button class="ni-btn" onclick="submitNotIssued()">Mark as Not Issued on Sheet</button>
   </div>
-
   <div class="mode-toggle">
     <button class="mode-btn active-board" id="boardModeBtn" onclick="setMode('board')">&#9992; Boarding</button>
     <div class="mode-divider"></div>
     <button class="mode-btn" id="deboardModeBtn" onclick="setMode('deboard')">&#11015; Deboarding</button>
   </div>
-
   <div class="scan-panel" id="scanPanel">
     <video id="video" muted playsinline></video>
     <div class="mode-overlay board" id="modeOverlay">Boarding</div>
@@ -186,12 +160,10 @@ button:disabled{opacity:0.35;cursor:not-allowed;}
       <span id="hintText">Tap start</span>
     </div>
   </div>
-
   <div class="controls">
     <button id="startBtn" class="primary" onclick="startScanning()">Start camera</button>
     <button id="stopBtn" disabled onclick="stopScanning()">Stop</button>
   </div>
-
   <div class="counters">
     <div class="counter-box board-box">
       <div class="counter-label">On board</div>
@@ -202,7 +174,6 @@ button:disabled{opacity:0.35;cursor:not-allowed;}
       <div class="counter-value" id="deboardCount">0</div>
     </div>
   </div>
-
   <div class="log-section">
     <div class="log-header">
       <span class="log-title">Session log</span>
@@ -212,7 +183,6 @@ button:disabled{opacity:0.35;cursor:not-allowed;}
   </div>
 </main>
 
-<!-- Result overlay -->
 <div class="result-overlay" id="resultOverlay">
   <div class="ov-icon" id="ovIcon"></div>
   <div class="ov-seq" id="ovSeq">000</div>
@@ -223,12 +193,11 @@ button:disabled{opacity:0.35;cursor:not-allowed;}
   <button class="ov-dismiss" onclick="dismissOverlay()">&#9654; Next passenger</button>
 </div>
 
-<!-- Reset modal -->
 <div class="modal-overlay" id="resetModal">
   <div class="modal-box">
     <div class="modal-icon">&#9888;</div>
     <div class="modal-title">Reset?</div>
-    <div class="modal-body">This will clear the session log and delete all rows from the Google Sheet. This cannot be undone.</div>
+    <div class="modal-body">This will clear the session log and delete all rows from the sheet. Cannot be undone.</div>
     <div class="modal-buttons">
       <button class="modal-cancel" onclick="closeResetModal()">Cancel</button>
       <button class="modal-confirm" onclick="confirmReset()">Reset</button>
@@ -247,10 +216,10 @@ button:disabled{opacity:0.35;cursor:not-allowed;}
 // ── Endpoint & Agent ──────────────────────────────────────────────
 let endpoint  = localStorage.getItem("gatelog_ep")    || "";
 let agentName = localStorage.getItem("gatelog_agent") || "";
-const banner      = document.getElementById("setupBanner");
-const epInput     = document.getElementById("endpointInput");
-const agentInput  = document.getElementById("agentInput");
-const agentDisplay= document.getElementById("agentDisplay");
+const banner       = document.getElementById("setupBanner");
+const epInput      = document.getElementById("endpointInput");
+const agentInput   = document.getElementById("agentInput");
+const agentDisplay = document.getElementById("agentDisplay");
 
 if (endpoint)  { epInput.value    = endpoint;  banner.style.display = "none"; }
 if (agentName) { agentInput.value = agentName; agentDisplay.textContent = agentName; }
@@ -277,25 +246,24 @@ window.saveEndpoint = function(){
 
 // ── Not Issued ────────────────────────────────────────────────────
 window.submitNotIssued = function(){
-  if (!endpoint){ toast("Save your endpoint URL first"); return; }
+  if (!endpoint){ toast("Save endpoint first"); return; }
   const raw = document.getElementById("notIssuedInput").value.trim();
-  if (!raw){ toast("Enter at least one seq number or range"); return; }
+  if (!raw){ toast("Enter seq numbers first"); return; }
   const seqs = [];
   raw.split(",").forEach(function(part){
     part = part.trim();
     if (part.indexOf("-") > -1) {
       const r = part.split("-");
-      const from = parseInt(r[0].trim(), 10), to = parseInt(r[1].trim(), 10);
-      if (!isNaN(from) && !isNaN(to))
-        for (var i = from; i <= to; i++) seqs.push(String(i).padStart(3,"0"));
+      const from = parseInt(r[0].trim(),10), to = parseInt(r[1].trim(),10);
+      if (!isNaN(from)&&!isNaN(to)) for(var i=from;i<=to;i++) seqs.push(String(i).padStart(3,"0"));
     } else {
-      const n = parseInt(part, 10);
+      const n = parseInt(part,10);
       if (!isNaN(n)) seqs.push(String(n).padStart(3,"0"));
     }
   });
-  if (!seqs.length){ toast("Could not parse any valid numbers"); return; }
+  if (!seqs.length){ toast("Could not parse any numbers"); return; }
   const win = window.open(endpoint + "?action=notissued&seqs=" + seqs.join(","), "_blank");
-  setTimeout(() => { if (win){ try{ win.close(); }catch(e){} } }, 3000);
+  setTimeout(()=>{ if(win){ try{win.close();}catch(e){} } }, 3000);
   toast(seqs.length + " seq numbers marked as Not Issued");
   document.getElementById("notIssuedInput").value = "";
 };
@@ -313,10 +281,10 @@ window.confirmReset    = function(){
   renderLog();
   dismissOverlay();
   stopScanning();
-  setTimeout(() => startScanning(), 500);
+  setTimeout(()=>startScanning(), 500);
   if (endpoint) {
     const win = window.open(endpoint + "?action=reset", "_blank");
-    setTimeout(() => { if (win){ try{ win.close(); }catch(e){} } }, 3500);
+    setTimeout(()=>{ if(win){ try{win.close();}catch(e){} } }, 3500);
     toast("Session and sheet cleared");
   } else {
     toast("Session cleared");
@@ -328,8 +296,8 @@ let currentMode = "board";
 window.setMode = function(mode){
   currentMode = mode;
   const isBoard = mode === "board";
-  document.getElementById("boardModeBtn").className  = "mode-btn" + (isBoard ? " active-board" : "");
-  document.getElementById("deboardModeBtn").className = "mode-btn" + (!isBoard ? " active-deboard" : "");
+  document.getElementById("boardModeBtn").className  = "mode-btn" + (isBoard?" active-board":"");
+  document.getElementById("deboardModeBtn").className = "mode-btn" + (!isBoard?" active-deboard":"");
   document.getElementById("scanPanel").classList.toggle("deboard-mode", !isBoard);
   const ov = document.getElementById("modeOverlay");
   ov.textContent = isBoard ? "Boarding" : "Deboarding";
@@ -343,338 +311,200 @@ function toast(msg){
   const t = document.getElementById("toast");
   t.textContent = msg; t.classList.add("show");
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => t.classList.remove("show"), 2800);
+  toastTimer = setTimeout(()=>t.classList.remove("show"), 2800);
 }
 
 // ── IATA BCBP parser ──────────────────────────────────────────────
 function parseBoardingPass(raw){
-  if (!raw || raw.length < 23) return null;
-  if (raw[0] !== "M" && raw[0] !== "S") return null;
+  if (!raw||raw.length<23) return null;
+  if (raw[0]!=="M"&&raw[0]!=="S") return null;
   const name = raw.slice(2,22).trim();
   let i = 23;
-  const take = n => { const s = raw.slice(i,i+n); i+=n; return s; };
-  const pnr     = take(7).trim();
-  const from    = take(3).trim();
-  const to      = take(3).trim();
-  const carrier = take(3).trim();
-  const fltNum  = take(5).trim();
+  const take = n=>{ const s=raw.slice(i,i+n); i+=n; return s; };
+  const pnr=take(7).trim(), from=take(3).trim(), to=take(3).trim();
+  const carrier=take(3).trim(), fltNum=take(5).trim();
   take(3); take(1);
-  const seatRaw = take(4).trim();
-  const seat    = seatRaw.replace(/^0+(\d)/, '$1');
-  const seqRaw  = take(5).trim();
-  const seqNum  = parseInt(seqRaw, 10);
-  const seq     = isNaN(seqNum) ? seqRaw : String(seqNum).padStart(3,"0");
-  return {
-    passengerName: name, pnr, from, to,
-    flightNumber: (carrier+fltNum).replace(/\s+/g,""),
-    seat, sequenceNumber: seq, sequenceValid: !isNaN(seqNum)
-  };
-}
-
-// ── Network monitor — warns agents if sheet connection is lost ────
-let networkOk = true;
-let networkCheckInterval = null;
-const networkBanner = document.createElement("div");
-networkBanner.id = "networkBanner";
-networkBanner.style.cssText = "display:none;position:fixed;top:0;left:0;right:0;z-index:600;"
-  + "background:#8b0000;color:#fff;font-family:ui-monospace,monospace;font-size:12px;"
-  + "font-weight:600;letter-spacing:0.06em;text-transform:uppercase;text-align:center;"
-  + "padding:10px;animation:pulse 1s infinite;";
-networkBanner.textContent = "⚠ WARNING — SHEET CONNECTION LOST — SCANS NOT BEING LOGGED";
-document.body.appendChild(networkBanner);
-
-function checkNetworkStatus() {
-  if (!endpoint) return;
-  const cbName = "gatelogPing_" + Date.now();
-  const timer = setTimeout(() => {
-    delete window[cbName];
-    setNetworkStatus(false);
-  }, 8000);
-  window[cbName] = function() {
-    clearTimeout(timer);
-    delete window[cbName];
-    if (pingEl && pingEl.parentNode) pingEl.parentNode.removeChild(pingEl);
-    setNetworkStatus(true);
-  };
-  const pingEl = document.createElement("script");
-  pingEl.src = endpoint + "?action=ping&callback=" + cbName;
-  pingEl.onerror = function() { clearTimeout(timer); delete window[cbName]; setNetworkStatus(false); };
-  document.head.appendChild(pingEl);
-}
-
-function setNetworkStatus(ok) {
-  if (ok === networkOk) return;
-  networkOk = ok;
-  networkBanner.style.display = ok ? "none" : "block";
-  if (!ok) {
-    toast("WARNING: Sheet connection lost — scans not logging");
-    if (navigator.vibrate){ try{ navigator.vibrate([500,200,500]); }catch(e){} }
-  }
-}
-
-function startNetworkMonitor() {
-  if (networkCheckInterval) clearInterval(networkCheckInterval);
-  checkNetworkStatus();
-  networkCheckInterval = setInterval(checkNetworkStatus, 30000);
-}
-
-function stopNetworkMonitor() {
-  if (networkCheckInterval) clearInterval(networkCheckInterval);
+  const seatRaw=take(4).trim();
+  const seat=seatRaw.replace(/^0+(\d)/,"$1");
+  const seqRaw=take(5).trim();
+  const seqNum=parseInt(seqRaw,10);
+  const seq=isNaN(seqNum)?seqRaw:String(seqNum).padStart(3,"0");
+  return { passengerName:name, pnr, from, to,
+    flightNumber:(carrier+fltNum).replace(/\s+/g,""),
+    seat, sequenceNumber:seq, sequenceValid:!isNaN(seqNum) };
 }
 
 // ── Wake Lock ─────────────────────────────────────────────────────
-let wakeLock = null;
+let wakeLock=null;
 async function requestWakeLock(){
-  try { if ("wakeLock" in navigator) wakeLock = await navigator.wakeLock.request("screen"); }
-  catch(e){}
+  try{ if("wakeLock" in navigator) wakeLock=await navigator.wakeLock.request("screen"); }catch(e){}
 }
 function releaseWakeLock(){
-  if (wakeLock){ try{ wakeLock.release(); wakeLock = null; }catch(e){} }
+  if(wakeLock){ try{wakeLock.release();wakeLock=null;}catch(e){} }
 }
-document.addEventListener("visibilitychange", () => {
-  if (document.visibilityState === "visible" && wakeLock === null) requestWakeLock();
+document.addEventListener("visibilitychange",()=>{
+  if(document.visibilityState==="visible"&&wakeLock===null) requestWakeLock();
 });
 
 // ── Camera ────────────────────────────────────────────────────────
-const video    = document.getElementById("video");
-const liveDot  = document.getElementById("liveDot");
-const statusTx = document.getElementById("statusText");
-const hintTx   = document.getElementById("hintText");
-let codeReader, lastRaw = "", lastAt = 0, overlayVisible = false;
+const video=document.getElementById("video");
+const liveDot=document.getElementById("liveDot");
+const statusTx=document.getElementById("statusText");
+const hintTx=document.getElementById("hintText");
+let codeReader, lastRaw="", lastAt=0, overlayVisible=false;
 
-function setLive(on, label){ liveDot.classList.toggle("live",on); statusTx.textContent = label; }
+function setLive(on,label){ liveDot.classList.toggle("live",on); statusTx.textContent=label; }
 
 window.startScanning = async function(){
-  if (!window.ZXingBrowser || !window.ZXing){ toast("Scanner library not loaded"); return; }
-  try {
-    const hints = new Map();
+  if(!window.ZXingBrowser||!window.ZXing){ toast("Scanner library not loaded"); return; }
+  try{
+    const hints=new Map();
     hints.set(window.ZXing.DecodeHintType.POSSIBLE_FORMATS,[
       window.ZXing.BarcodeFormat.PDF_417,
       window.ZXing.BarcodeFormat.QR_CODE,
       window.ZXing.BarcodeFormat.CODE_128
     ]);
-    hints.set(window.ZXing.DecodeHintType.TRY_HARDER, true);
-    codeReader = new window.ZXingBrowser.BrowserMultiFormatReader(hints);
-    document.getElementById("startBtn").disabled = true;
-    document.getElementById("stopBtn").disabled  = false;
-    setLive(true, "Scanning..."); hintTx.textContent = "Hold barcode steady";
+    hints.set(window.ZXing.DecodeHintType.TRY_HARDER,true);
+    codeReader=new window.ZXingBrowser.BrowserMultiFormatReader(hints);
+    document.getElementById("startBtn").disabled=true;
+    document.getElementById("stopBtn").disabled=false;
+    setLive(true,"Scanning..."); hintTx.textContent="Hold barcode steady";
     await requestWakeLock();
-    if (endpoint) startNetworkMonitor();
-    try {
-      const p = await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}});
-      p.getTracks().forEach(t=>t.stop());
-    } catch(e){}
-    const devices = await window.ZXingBrowser.BrowserCodeReader.listVideoInputDevices();
-    const backCam = devices.find(d=>/back|rear|environment/i.test(d.label))||devices[devices.length-1];
-    await codeReader.decodeFromVideoDevice(backCam?backCam.deviceId:undefined, video, result => {
-      if (!result || overlayVisible) return;
-      const text = result.getText(), now = Date.now();
-      if (text === lastRaw && (now - lastAt) < 8000) return;
-      lastRaw = text; lastAt = now;
+    try{ const p=await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}}); p.getTracks().forEach(t=>t.stop()); }catch(e){}
+    const devices=await window.ZXingBrowser.BrowserCodeReader.listVideoInputDevices();
+    const backCam=devices.find(d=>/back|rear|environment/i.test(d.label))||devices[devices.length-1];
+    await codeReader.decodeFromVideoDevice(backCam?backCam.deviceId:undefined,video,result=>{
+      if(!result||overlayVisible) return;
+      const text=result.getText(), now=Date.now();
+      if(text===lastRaw&&(now-lastAt)<8000) return;
+      lastRaw=text; lastAt=now;
       handleDecoded(text);
     });
-  } catch(e){
-    console.error(e); setLive(false,"Camera error"); hintTx.textContent = "";
+  }catch(e){
+    console.error(e); setLive(false,"Camera error"); hintTx.textContent="";
     toast(e.name==="NotAllowedError"?"Camera permission denied":"Couldn't start camera");
-    document.getElementById("startBtn").disabled = false;
-    document.getElementById("stopBtn").disabled  = true;
+    document.getElementById("startBtn").disabled=false;
+    document.getElementById("stopBtn").disabled=true;
   }
 };
 
 window.stopScanning = function(){
-  if (codeReader){ try{ codeReader.reset(); }catch(e){} }
-  setLive(false,"Camera off"); hintTx.textContent = "Tap start";
-  document.getElementById("startBtn").disabled = false;
-  document.getElementById("stopBtn").disabled  = true;
+  if(codeReader){ try{codeReader.reset();}catch(e){} }
+  setLive(false,"Camera off"); hintTx.textContent="Tap start";
+  document.getElementById("startBtn").disabled=false;
+  document.getElementById("stopBtn").disabled=true;
   releaseWakeLock();
-  stopNetworkMonitor();
 };
 
 // ── Overlay ───────────────────────────────────────────────────────
-const resultOverlay = document.getElementById("resultOverlay");
-const ovSeq   = document.getElementById("ovSeq");
-const ovName  = document.getElementById("ovName");
-const ovSeat  = document.getElementById("ovSeat");
-const ovBadge = document.getElementById("ovBadge");
-const ovIcon  = document.getElementById("ovIcon");
-const ovNote  = document.getElementById("ovNote");
+const resultOverlay=document.getElementById("resultOverlay");
+const ovSeq=document.getElementById("ovSeq");
+const ovName=document.getElementById("ovName");
+const ovSeat=document.getElementById("ovSeat");
+const ovBadge=document.getElementById("ovBadge");
+const ovIcon=document.getElementById("ovIcon");
+const ovNote=document.getElementById("ovNote");
 
-function showOverlay(seq, name, seat, type, badge, note, isDup, isError, isSending){
-  ovSeq.textContent  = seq;
-  ovName.textContent = name;
-  ovSeat.textContent = seat ? "Seat " + seat : "";
-  ovBadge.textContent = badge;
-  ovNote.textContent  = note;
-  let cls = "result-overlay show ";
-  if (isSending)    cls += "sending-ov";
-  else if (isError) cls += "error-ov";
-  else if (isDup)   cls += "dup-ov";
-  else              cls += (type === "Board" ? "board-ov" : "deboard-ov");
-  resultOverlay.className = cls;
-  ovIcon.textContent = isSending ? "\u23F3" : isError ? "\u26A0" : isDup ? "\u26A0" : (type === "Board" ? "\u2708" : "\u2B07");
-  overlayVisible = true;
+function showOverlay(seq,name,seat,cls,icon,badge,note){
+  ovSeq.textContent=seq; ovName.textContent=name;
+  ovSeat.textContent=seat?"Seat "+seat:"";
+  ovBadge.textContent=badge; ovNote.textContent=note;
+  ovIcon.textContent=icon;
+  resultOverlay.className="result-overlay show "+cls;
+  overlayVisible=true;
 }
 
-window.dismissOverlay = function(){
-  resultOverlay.className = "result-overlay";
-  overlayVisible = false;
-  lastRaw = ""; lastAt = 0;
+window.dismissOverlay=function(){
+  resultOverlay.className="result-overlay";
+  overlayVisible=false;
+  lastRaw=""; lastAt=0;
 };
 
-// ── Tracking sets (client-side cache) ─────────────────────────────
+// ── Tracking (client-side) ────────────────────────────────────────
 const scannedBoard   = new Set();
 const scannedDeboard = new Set();
 
 // ── Handle decoded barcode ────────────────────────────────────────
 function handleDecoded(rawText){
-  const p = parseBoardingPass(rawText);
-  if (!p){ toast("Not a recognised boarding pass"); return; }
-  if (navigator.vibrate){ try{ navigator.vibrate(40); }catch(e){} }
+  const p=parseBoardingPass(rawText);
+  if(!p){ toast("Not a recognised boarding pass"); return; }
+  if(navigator.vibrate){ try{navigator.vibrate(40);}catch(e){} }
 
-  const type = currentMode === "board" ? "Board" : "Deboard";
-
-  // Show "sending" state immediately so staff see feedback
-  showOverlay(p.sequenceNumber, p.passengerName, p.seat, type,
-    "Checking...", "Verifying with sheet...", false, false, true);
-
-  if (!endpoint){
-    // No endpoint — just log locally
-    updateOverlayResult(type, "ok", null, p);
-    logLocally(p, type, "ok");
-    return;
-  }
-
-  // ── Send via window.open (proven to work) + poll sheet for result ─
-  // Apps Script redirects block JSONP/fetch across origins.
-  // Strategy: fire the request via window.open (which follows redirects),
-  // then poll the sheet for confirmation via a second JSONP call.
-  const params = new URLSearchParams({
-    action:         "log",
-    sequenceNumber: p.sequenceNumber,
-    passengerName:  p.passengerName,
-    flightNumber:   p.flightNumber || "",
-    seat:           p.seat || "",
-    pnr:            p.pnr || "",
-    type,
-    agent: agentName || document.getElementById("agentInput").value.trim() || "Unknown"
-  });
-
-  // ── Same-device duplicate check FIRST (instant, no network needed) ─
+  const type=currentMode==="board"?"Board":"Deboard";
   const alreadyBoarded   = scannedBoard.has(p.sequenceNumber);
   const alreadyDeboarded = scannedDeboard.has(p.sequenceNumber);
-  const isSameDeviceDup = (type === "Board" && alreadyBoarded && !alreadyDeboarded)
-                        || (type === "Deboard" && alreadyDeboarded);
+  const isReboard  = type==="Board" && alreadyBoarded && alreadyDeboarded;
+  const isDup      = type==="Board" ? (alreadyBoarded&&!alreadyDeboarded) : alreadyDeboarded;
 
-  if (isSameDeviceDup) {
-    const dupMsg = type === "Board" ? "Already boarded on this device" : "Already deboarded on this device";
-    updateOverlayResult(type, "duplicate", { message: dupMsg, result: "duplicate" }, p);
-    logLocally(p, type, "duplicate", dupMsg);
-    if (navigator.vibrate){ try{ navigator.vibrate([200,100,200,100,200]); }catch(e){} }
+  if(isDup){
+    // Same device duplicate — show immediately, no network call
+    showOverlay(p.sequenceNumber, p.passengerName, p.seat,
+      "dup-ov", "\u26A0",
+      type==="Board"?"Already Boarded":"Already Deboarded",
+      "Scanned on this device already");
+    if(navigator.vibrate){ try{navigator.vibrate([200,100,200,100,200]);}catch(e){} }
+    entries.unshift({ sequenceNumber:p.sequenceNumber, passengerName:p.passengerName,
+      type, statusClass:"dup", statusLabel:"Duplicate" });
+    renderLog();
     return;
   }
 
-  // ── Send via hidden iframe — no popup, no white screen ───────────
-  // Iframe fires a GET request silently in the background.
-  // Apps Script receives and processes it with LockService.
-  const iframe = document.createElement("iframe");
-  iframe.style.cssText = "display:none;width:0;height:0;border:none;position:absolute;";
-  iframe.src = endpoint + "?" + params.toString();
-  document.body.appendChild(iframe);
+  // Show result immediately
+  const badge = isReboard?"Re-boarded" : type==="Board"?"Boarded":"Deboarded";
+  const cls   = type==="Board"?"board-ov":"deboard-ov";
+  const icon  = type==="Board"?"\u2708":"\u2B07";
+  showOverlay(p.sequenceNumber, p.passengerName, p.seat, cls, icon, badge, "Logged to sheet");
 
-  // Show confirmed immediately on screen
-  const logResult = type === "Board" ? "boarded" : "deboarded";
-  updateOverlayResult(type, "ok", { result: logResult }, p);
-  logLocally(p, type, "ok");
-  if (type === "Board") { scannedBoard.add(p.sequenceNumber); scannedDeboard.delete(p.sequenceNumber); }
-  else { scannedDeboard.add(p.sequenceNumber); }
-
-  // Clean up iframe after 5s
-  setTimeout(() => { if (iframe.parentNode) iframe.parentNode.removeChild(iframe); }, 5000);
-
-  // Cross-device duplicate checks at 2s and 5s via JSONP
-  function runDuplicateCheck(delay) {
-    setTimeout(() => {
-      const cbName = "gatelogCheck_" + Date.now();
-      window[cbName] = function(r) {
-        delete window[cbName];
-        if (chkEl && chkEl.parentNode) chkEl.parentNode.removeChild(chkEl);
-        if (r.status === "duplicate") {
-          updateOverlayResult(type, "duplicate", r, p);
-          logLocally(p, type, "duplicate", r.message);
-          if (type === "Board") scannedBoard.delete(p.sequenceNumber);
-          else scannedDeboard.delete(p.sequenceNumber);
-          if (navigator.vibrate){ try{ navigator.vibrate([200,100,200,100,200]); }catch(e){} }
-        }
-      };
-      const checkParams = new URLSearchParams({ action:"check", callback:cbName, sequenceNumber:p.sequenceNumber });
-      const chkEl = document.createElement("script");
-      chkEl.src = endpoint + "?" + checkParams.toString();
-      chkEl.onerror = function(){ delete window[cbName]; };
-      document.head.appendChild(chkEl);
-    }, delay);
-  }
-  runDuplicateCheck(2000);
-  runDuplicateCheck(5000);
-}
-
-function updateOverlayResult(type, status, result, p){
-  const isBoard = type === "Board";
-  if (status === "ok") {
-    const resultStr = result ? result.result : "ok";
-    let badge = isBoard ? "Boarded" : "Deboarded";
-    if (resultStr === "reboarded") badge = "Re-boarded";
-    showOverlay(p.sequenceNumber, p.passengerName, p.seat, type,
-      badge, "Confirmed by sheet", false, false, false);
-  } else if (status === "duplicate") {
-    const msg = result ? result.message : "Already scanned";
-    showOverlay(p.sequenceNumber, p.passengerName, p.seat, type,
-      "Duplicate", msg, true, false, false);
+  // Update client tracking
+  if(type==="Board"){
+    scannedBoard.add(p.sequenceNumber);
+    if(isReboard) scannedDeboard.delete(p.sequenceNumber);
   } else {
-    showOverlay(p.sequenceNumber, p.passengerName, p.seat, type,
-      "Error", "Could not log — check connection", false, true, false);
+    scannedDeboard.add(p.sequenceNumber);
+  }
+
+  // Log to session
+  entries.unshift({ sequenceNumber:p.sequenceNumber, passengerName:p.passengerName,
+    type, statusClass:"ok", statusLabel:badge });
+  renderLog();
+
+  // Fire to sheet via window.open (proven reliable with your org's Apps Script)
+  if(endpoint){
+    const params=new URLSearchParams({
+      action:"log",
+      sequenceNumber: p.sequenceNumber,
+      passengerName:  p.passengerName,
+      flightNumber:   p.flightNumber||"",
+      seat:           p.seat||"",
+      pnr:            p.pnr||"",
+      type,
+      agent: agentName || agentInput.value.trim() || "Unknown"
+    });
+    const win=window.open(endpoint+"?"+params.toString(),"_blank");
+    setTimeout(()=>{ if(win){ try{win.close();}catch(e){} } },2500);
   }
 }
 
-// ── Session log ───────────────────────────────────────────────────
-const logList       = document.getElementById("logList");
-const logMeta       = document.getElementById("logMeta");
-const boardCountEl  = document.getElementById("boardCount");
-const deboardCountEl= document.getElementById("deboardCount");
-let entries = [];
-
-function logLocally(p, type, status, message){
-  let statusClass, statusLabel;
-  if (status === "ok"){ statusClass = "ok"; statusLabel = type === "Board" ? "Boarded" : "Deboarded"; }
-  else if (status === "duplicate"){ statusClass = "dup"; statusLabel = "Duplicate"; }
-  else { statusClass = "error"; statusLabel = "Error"; }
-
-  entries.unshift({
-    sequenceNumber: p.sequenceNumber,
-    passengerName:  p.passengerName,
-    type, statusClass, statusLabel
-  });
-  renderLog();
-}
+// ── Session log + counts ──────────────────────────────────────────
+const logList=document.getElementById("logList");
+const logMeta=document.getElementById("logMeta");
+const boardCountEl=document.getElementById("boardCount");
+const deboardCountEl=document.getElementById("deboardCount");
+let entries=[];
 
 function renderLog(){
-  const paxState = {};
-  [...entries].reverse().forEach(e => {
-    if (e.statusClass === "dup" || e.statusClass === "error") return;
-    paxState[e.sequenceNumber] = e.type;
+  const paxState={};
+  [...entries].reverse().forEach(e=>{
+    if(e.statusClass==="dup") return;
+    paxState[e.sequenceNumber]=e.type;
   });
-  boardCountEl.textContent   = String(Object.values(paxState).filter(t=>t==="Board").length);
-  deboardCountEl.textContent = String(Object.values(paxState).filter(t=>t==="Deboard").length);
-
-  const boardedSeqs = Object.entries(paxState)
-    .filter(([,t])=>t==="Board").map(([s])=>parseInt(s)).filter(n=>!isNaN(n));
-  logMeta.textContent = boardedSeqs.length
-    ? "highest: " + String(Math.max(...boardedSeqs)).padStart(3,"0") : "";
-
-  if (!entries.length){ logList.innerHTML='<div class="log-empty">No scans yet.</div>'; return; }
-  logList.innerHTML = entries.map(e => {
-    const seqClass = e.statusClass === "dup" ? "dup"
-      : e.statusClass === "error" ? "error"
-      : e.type === "Board" ? "board" : "deboard";
+  boardCountEl.textContent=String(Object.values(paxState).filter(t=>t==="Board").length);
+  deboardCountEl.textContent=String(Object.values(paxState).filter(t=>t==="Deboard").length);
+  const boardedSeqs=Object.entries(paxState).filter(([,t])=>t==="Board").map(([s])=>parseInt(s)).filter(n=>!isNaN(n));
+  logMeta.textContent=boardedSeqs.length?"highest: "+String(Math.max(...boardedSeqs)).padStart(3,"0"):"";
+  if(!entries.length){ logList.innerHTML='<div class="log-empty">No scans yet.</div>'; return; }
+  logList.innerHTML=entries.map(e=>{
+    const seqClass=e.statusClass==="dup"?"dup":e.type==="Board"?"board":"deboard";
     return `<div class="log-row">
       <span class="log-seq ${seqClass}">${e.sequenceNumber||"—"}</span>
       <span class="log-name">${e.passengerName||"—"}</span>
