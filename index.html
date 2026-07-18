@@ -150,7 +150,10 @@ button:disabled{opacity:0.35;cursor:not-allowed;}
       <div class="sub">PDF417 · IATA BCBP · AUTO-LOG</div>
     </div>
     <div style="display:flex;flex-direction:column;gap:5px;margin-top:4px;">
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
+      <div id="agentDisplay" style="font-family:var(--mono);font-size:10px;color:var(--beacon);font-weight:600;min-height:14px;"></div>
       <button onclick="editEndpoint()" style="font-family:var(--mono);font-size:9px;letter-spacing:0.08em;text-transform:uppercase;padding:6px 10px;border-radius:2px;border:1px solid rgba(238,241,234,0.2);background:transparent;color:rgba(238,241,234,0.4);cursor:pointer;flex:unset;">Edit</button>
+    </div>
       <button onclick="resetAll()" style="font-family:var(--mono);font-size:9px;letter-spacing:0.08em;text-transform:uppercase;padding:6px 10px;border-radius:2px;border:1px solid rgba(196,72,22,0.4);background:transparent;color:rgba(196,72,22,0.7);cursor:pointer;flex:unset;">Reset</button>
     </div>
   </div>
@@ -160,7 +163,7 @@ button:disabled{opacity:0.35;cursor:not-allowed;}
     <strong>Paste your Apps Script URL:</strong>
     <input id="endpointInput" placeholder="https://script.google.com/macros/s/.../exec" type="url">
     <div style="margin-top:8px;font-size:11px;color:rgba(238,241,234,0.5);">Agent name (logged with each scan):</div>
-    <input id="agentInput" placeholder="e.g. TANAKA" maxlength="30" style="width:100%;font-family:var(--mono);font-size:11px;padding:8px 10px;background:rgba(0,0,0,0.3);border:1px solid rgba(238,241,234,0.2);color:var(--paper);border-radius:2px;margin:4px 0 8px;">
+    <input id="agentInput" placeholder="Enter agent name" maxlength="30" style="width:100%;font-family:var(--mono);font-size:11px;padding:8px 10px;background:rgba(0,0,0,0.3);border:1px solid rgba(238,241,234,0.2);color:var(--paper);border-radius:2px;margin:4px 0 8px;">
     <button onclick="saveEndpoint()">Save</button>
   </div>
 
@@ -263,7 +266,7 @@ window.saveEndpoint = function(){
   const a = document.getElementById("agentInput").value.trim();
   if (a){ agentName = a; localStorage.setItem("gatelog_agent", a); }
   const disp = document.getElementById("agentDisplay");
-  if (disp) disp.textContent = agentName;
+  if (disp) disp.textContent = agentName || "";
   banner.style.display = "none";
   toast("Saved");
 };
@@ -272,6 +275,8 @@ window.saveEndpoint = function(){
 let agentName = localStorage.getItem("gatelog_agent") || "";
 const agentInput = document.getElementById("agentInput");
 if (agentName) agentInput.value = agentName;
+const agentDisplay = document.getElementById("agentDisplay");
+if (agentDisplay && agentName) agentDisplay.textContent = agentName;
 const agentDisplay = document.getElementById("agentDisplay");
 if (agentDisplay && agentName) agentDisplay.textContent = agentName;
 
