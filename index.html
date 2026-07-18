@@ -150,8 +150,7 @@ button:disabled{opacity:0.35;cursor:not-allowed;}
       <div class="sub">PDF417 · IATA BCBP · AUTO-LOG</div>
     </div>
     <div style="display:flex;flex-direction:column;gap:5px;margin-top:4px;">
-      <div id="agentDisplay" style="font-family:var(--mono);font-size:10px;color:var(--beacon);text-align:right;margin-bottom:4px;"></div>
-    <button onclick="editEndpoint()" style="font-family:var(--mono);font-size:9px;letter-spacing:0.08em;text-transform:uppercase;padding:6px 10px;border-radius:2px;border:1px solid rgba(238,241,234,0.2);background:transparent;color:rgba(238,241,234,0.4);cursor:pointer;flex:unset;">Edit</button>
+      <button onclick="editEndpoint()" style="font-family:var(--mono);font-size:9px;letter-spacing:0.08em;text-transform:uppercase;padding:6px 10px;border-radius:2px;border:1px solid rgba(238,241,234,0.2);background:transparent;color:rgba(238,241,234,0.4);cursor:pointer;flex:unset;">Edit</button>
       <button onclick="resetAll()" style="font-family:var(--mono);font-size:9px;letter-spacing:0.08em;text-transform:uppercase;padding:6px 10px;border-radius:2px;border:1px solid rgba(196,72,22,0.4);background:transparent;color:rgba(196,72,22,0.7);cursor:pointer;flex:unset;">Reset</button>
     </div>
   </div>
@@ -364,6 +363,25 @@ function parseBoardingPass(raw){
   };
 }
 
+// ── Wake Lock — keeps screen on while scanning ───────────────────
+let wakeLock = null;
+async function requestWakeLock(){
+  try {
+    if ("wakeLock" in navigator) {
+      wakeLock = await navigator.wakeLock.request("screen");
+    }
+  } catch(e){ console.log("WakeLock not available:", e); }
+}
+function releaseWakeLock(){
+  if (wakeLock){ try{ wakeLock.release(); wakeLock = null; }catch(e){} }
+}
+// Re-acquire wake lock if page becomes visible again
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible" && wakeLock === null) {
+    requestWakeLock();
+  }
+});
+
 // ── Camera ────────────────────────────────────────────────────────
 const video    = document.getElementById("video");
 const liveDot  = document.getElementById("liveDot");
@@ -388,6 +406,7 @@ window.startScanning = async function(){
     document.getElementById("startBtn").disabled = true;
     document.getElementById("stopBtn").disabled  = false;
     setLive(true, "Scanning..."); hintTx.textContent = "Hold barcode steady";
+    requestWakeLock();
     try {
       const p = await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}});
       p.getTracks().forEach(t=>t.stop());
@@ -414,6 +433,7 @@ window.stopScanning = function(){
   setLive(false,"Camera off"); hintTx.textContent = "Tap start";
   document.getElementById("startBtn").disabled = false;
   document.getElementById("stopBtn").disabled  = true;
+  releaseWakeLock();
 };
 
 // ── Overlay ───────────────────────────────────────────────────────
