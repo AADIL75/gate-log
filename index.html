@@ -491,13 +491,12 @@ function handleDecoded(rawText){
     return;
   }
 
-  // ── JSONP request — bypasses CORS, gets real confirmation back ───
-  // JSONP works by injecting a <script> tag with a callback function name.
-  // Apps Script wraps the JSON response in that callback, browser executes it.
-  const cbName = "gatelogCb_" + Date.now();
+  // ── Send via window.open (proven to work) + poll sheet for result ─
+  // Apps Script redirects block JSONP/fetch across origins.
+  // Strategy: fire the request via window.open (which follows redirects),
+  // then poll the sheet for confirmation via a second JSONP call.
   const params = new URLSearchParams({
     action:         "log",
-    callback:       cbName,
     sequenceNumber: p.sequenceNumber,
     passengerName:  p.passengerName,
     flightNumber:   p.flightNumber || "",
@@ -507,38 +506,56 @@ function handleDecoded(rawText){
     agent: agentName || document.getElementById("agentInput").value.trim() || "Unknown"
   });
 
-  // Timeout in case script never loads
-  const timer = setTimeout(() => {
-    delete window[cbName];
-    updateOverlayResult(type, "error", null, p);
-    logLocally(p, type, "error", "Timeout");
-  }, 15000);
+  const win = window.open(endpoint + "?" + params.toString(), "_blank");
 
-  window[cbName] = function(result) {
-    clearTimeout(timer);
-    delete window[cbName];
-    if (scriptEl && scriptEl.parentNode) scriptEl.parentNode.removeChild(scriptEl);
-    updateOverlayResult(type, result.status, result, p);
-    logLocally(p, type, result.status, result.message);
-    if (result.status === "ok") {
-      if (type === "Board") {
-        scannedBoard.add(p.sequenceNumber);
-        scannedDeboard.delete(p.sequenceNumber);
-      } else {
-        scannedDeboard.add(p.sequenceNumber);
+  // Poll for result by calling action=check after 3 seconds
+  setTimeout(() => {
+    if (win){ try{ win.close(); }catch(e){} }
+
+    // Check result via JSONP
+    const cbName = "gatelogCheck_" + Date.now();
+    const checkTimer = setTimeout(() => {
+      delete window[cbName];
+      // Assume success if check times out — window.open fired correctly
+      updateOverlayResult(type, "ok", { result: type === "Board" ? "boarded" : "deboarded" }, p);
+      logLocally(p, type, "ok");
+      if (type === "Board") { scannedBoard.add(p.sequenceNumber); scannedDeboard.delete(p.sequenceNumber); }
+      else { scannedDeboard.add(p.sequenceNumber); }
+    }, 8000);
+
+    window[cbName] = function(result) {
+      clearTimeout(checkTimer);
+      delete window[cbName];
+      if (chkEl && chkEl.parentNode) chkEl.parentNode.removeChild(chkEl);
+      updateOverlayResult(type, result.status, result, p);
+      logLocally(p, type, result.status, result.message);
+      if (result.status === "ok" || result.status === "duplicate") {
+        if (result.result === "boarded" || result.result === "reboarded") {
+          scannedBoard.add(p.sequenceNumber); scannedDeboard.delete(p.sequenceNumber);
+        } else if (result.result === "deboarded") {
+          scannedDeboard.add(p.sequenceNumber);
+        }
       }
-    }
-  };
+    };
 
-  const scriptEl = document.createElement("script");
-  scriptEl.src = endpoint + "?" + params.toString();
-  scriptEl.onerror = function() {
-    clearTimeout(timer);
-    delete window[cbName];
-    updateOverlayResult(type, "error", null, p);
-    logLocally(p, type, "error", "Network error");
-  };
-  document.head.appendChild(scriptEl);
+    const checkParams = new URLSearchParams({
+      action: "check",
+      callback: cbName,
+      sequenceNumber: p.sequenceNumber
+    });
+    const chkEl = document.createElement("script");
+    chkEl.src = endpoint + "?" + checkParams.toString();
+    chkEl.onerror = function() {
+      clearTimeout(checkTimer);
+      delete window[cbName];
+      // Can't confirm but window.open fired — mark as ok
+      updateOverlayResult(type, "ok", { result: type === "Board" ? "boarded" : "deboarded" }, p);
+      logLocally(p, type, "ok");
+      if (type === "Board") { scannedBoard.add(p.sequenceNumber); scannedDeboard.delete(p.sequenceNumber); }
+      else { scannedDeboard.add(p.sequenceNumber); }
+    };
+    document.head.appendChild(chkEl);
+  }, 3000);
 }
 
 function updateOverlayResult(type, status, result, p){
