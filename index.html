@@ -135,6 +135,8 @@ button:disabled{opacity:0.35;cursor:not-allowed;}
   <div class="setup-banner" id="setupBanner">
     <strong>Setup:</strong>
     <input id="endpointInput" placeholder="https://script.google.com/macros/s/.../exec" type="url">
+    <div style="margin-top:4px;font-size:11px;color:rgba(238,241,234,0.5);">Flight number:</div>
+    <input id="flightInput" placeholder="e.g. NH212" maxlength="10" style="width:100%;font-family:var(--mono);font-size:11px;padding:8px 10px;background:rgba(0,0,0,0.3);border:1px solid rgba(238,241,234,0.2);color:var(--paper);border-radius:2px;margin:6px 0;">
     <div style="margin-top:4px;font-size:11px;color:rgba(238,241,234,0.5);">Your name:</div>
     <input id="agentInput" placeholder="Enter your name" maxlength="30">
     <button onclick="saveEndpoint()">Save</button>
@@ -223,6 +225,9 @@ const agentDisplay = document.getElementById("agentDisplay");
 
 if (endpoint)  { epInput.value    = endpoint;  banner.style.display = "none"; }
 if (agentName) { agentInput.value = agentName; agentDisplay.textContent = agentName; }
+const savedFlight = localStorage.getItem("gatelog_flight") || "";
+const flightInputEl = document.getElementById("flightInput");
+if (flightInputEl && savedFlight) flightInputEl.value = savedFlight;
 
 window.editEndpoint = function(){
   localStorage.removeItem("gatelog_ep");
@@ -239,6 +244,8 @@ window.saveEndpoint = function(){
   localStorage.setItem("gatelog_ep", v);
   const a = agentInput.value.trim();
   if (a){ agentName = a; localStorage.setItem("gatelog_agent", a); }
+  const f = document.getElementById("flightInput").value.trim().toUpperCase();
+  if (f){ localStorage.setItem("gatelog_flight", f); }
   agentDisplay.textContent = agentName || "";
   banner.style.display = "none";
   toast("Saved");
@@ -431,6 +438,24 @@ function handleDecoded(rawText){
   if(navigator.vibrate){ try{navigator.vibrate(40);}catch(e){} }
 
   const type=currentMode==="board"?"Board":"Deboard";
+
+  // ── Flight number validation ──────────────────────────────────────
+  // Only allow boarding passes for this flight.
+  // Strips spaces and compares e.g. "NH212" vs "NH0212" both match.
+  const expectedFlight = (endpoint ? localStorage.getItem("gatelog_flight") || "NH212" : "NH212").toUpperCase().replace(/\s/g,"");
+  const scannedFlight  = (p.flightNumber || "").toUpperCase().replace(/\s/g,"").replace(/^([A-Z]+)0+(\d)/,"$1$2");
+  const expectedNorm   = expectedFlight.replace(/^([A-Z]+)0+(\d)/,"$1$2");
+  if (scannedFlight && scannedFlight !== expectedNorm) {
+    showOverlay(p.sequenceNumber, p.passengerName, p.seat,
+      "dup-ov", "⚠", "Wrong Flight",
+      "This pass is for " + p.flightNumber + " — not " + expectedFlight);
+    if(navigator.vibrate){ try{navigator.vibrate([300,100,300,100,300]);}catch(e){} }
+    entries.unshift({ sequenceNumber:p.sequenceNumber, passengerName:p.passengerName,
+      type, statusClass:"dup", statusLabel:"Wrong flight" });
+    renderLog();
+    return;
+  }
+
   const alreadyBoarded   = scannedBoard.has(p.sequenceNumber);
   const alreadyDeboarded = scannedDeboard.has(p.sequenceNumber);
   const isReboard  = type==="Board" && alreadyBoarded && alreadyDeboarded;
