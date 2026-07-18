@@ -491,20 +491,18 @@ function handleDecoded(rawText){
     return;
   }
 
-  // ── POST to Apps Script — real server-side confirmation ──────────
-  fetch(endpoint, {
-    method: "POST",
-    headers: { "Content-Type": "text/plain" },
-    body: JSON.stringify({
-      sequenceNumber: p.sequenceNumber,
-      passengerName:  p.passengerName,
-      flightNumber:   p.flightNumber || "",
-      seat:           p.seat || "",
-      pnr:            p.pnr || "",
-      type,
-      agent: agentName || document.getElementById("agentInput").value.trim() || "Unknown"
-    })
-  })
+  // ── GET to Apps Script with action=log — gets real confirmation ──
+  const params = new URLSearchParams({
+    action:         "log",
+    sequenceNumber: p.sequenceNumber,
+    passengerName:  p.passengerName,
+    flightNumber:   p.flightNumber || "",
+    seat:           p.seat || "",
+    pnr:            p.pnr || "",
+    type,
+    agent: agentName || document.getElementById("agentInput").value.trim() || "Unknown"
+  });
+  fetch(endpoint + "?" + params.toString())
   .then(r => r.json())
   .then(result => {
     updateOverlayResult(type, result.status, result, p);
