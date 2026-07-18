@@ -60,10 +60,12 @@ button{font-family:var(--mono);font-size:12px;letter-spacing:0.06em;text-transfo
 button.primary{background:var(--beacon);border-color:var(--beacon);color:#1a0d05;font-weight:600;}
 button.primary-deboard{background:var(--deboard);border-color:var(--deboard);color:#fff;font-weight:600;}
 button:disabled{opacity:0.35;cursor:not-allowed;}
-.counters{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px;}
+.counters{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:4px;}
 .counter-box{border:1px solid rgba(238,241,234,0.1);border-radius:2px;padding:10px;text-align:center;}
 .counter-box.board-box{border-color:rgba(255,90,31,0.25);}
 .counter-box.deboard-box{border-color:rgba(42,106,170,0.3);}
+.counter-box.remaining-box{border-color:rgba(238,241,234,0.2);}
+.remaining-box .counter-value{color:var(--paper);}
 .counter-label{font-family:var(--mono);font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:rgba(238,241,234,0.4);}
 .counter-value{font-family:var(--mono);font-weight:700;font-size:32px;line-height:1.1;margin-top:2px;}
 .board-box .counter-value{color:var(--beacon);}
@@ -138,6 +140,8 @@ button:disabled{opacity:0.35;cursor:not-allowed;}
   <div class="setup-banner" id="setupBanner">
     <strong>Setup:</strong>
     <input id="endpointInput" placeholder="https://script.google.com/macros/s/.../exec" type="url">
+    <div style="margin-top:4px;font-size:11px;color:rgba(238,241,234,0.5);">Expected pax (total):</div>
+    <input id="expectedInput" placeholder="e.g. 152" type="number" maxlength="3" style="width:100%;font-family:var(--mono);font-size:11px;padding:8px 10px;background:rgba(0,0,0,0.3);border:1px solid rgba(238,241,234,0.2);color:var(--paper);border-radius:2px;margin:6px 0;">
     <div style="margin-top:4px;font-size:11px;color:rgba(238,241,234,0.5);">Flight number:</div>
     <input id="flightInput" placeholder="e.g. NH212" maxlength="10" style="width:100%;font-family:var(--mono);font-size:11px;padding:8px 10px;background:rgba(0,0,0,0.3);border:1px solid rgba(238,241,234,0.2);color:var(--paper);border-radius:2px;margin:6px 0;">
     <div style="margin-top:4px;font-size:11px;color:rgba(238,241,234,0.5);">Your name:</div>
@@ -169,13 +173,14 @@ button:disabled{opacity:0.35;cursor:not-allowed;}
     <button id="startBtn" class="primary" onclick="startScanning()">Start camera</button>
     <button id="stopBtn" disabled onclick="stopScanning()">Stop</button>
   </div>
+  <div style="font-family:var(--mono);font-size:9px;color:rgba(238,241,234,0.3);letter-spacing:0.06em;margin-top:10px;text-align:right;">counts are per device — sheet has full total</div>
   <div class="counters">
     <div class="counter-box board-box">
-      <div class="counter-label">On board</div>
+      <div class="counter-label">My Scans</div>
       <div class="counter-value" id="boardCount">0</div>
     </div>
     <div class="counter-box deboard-box">
-      <div class="counter-label">Deboarded</div>
+      <div class="counter-label">My Deboard</div>
       <div class="counter-value" id="deboardCount">0</div>
     </div>
   </div>
@@ -236,6 +241,9 @@ if (agentName) { agentInput.value = agentName; agentDisplay.textContent = agentN
 const savedFlight = localStorage.getItem("gatelog_flight") || "";
 const flightInputEl = document.getElementById("flightInput");
 if (flightInputEl && savedFlight) flightInputEl.value = savedFlight;
+let expectedPax = parseInt(localStorage.getItem("gatelog_expected")||"0",10)||0;
+const expectedInputEl = document.getElementById("expectedInput");
+if (expectedInputEl && expectedPax) expectedInputEl.value = String(expectedPax);
 
 window.editEndpoint = function(){
   localStorage.removeItem("gatelog_ep");
@@ -254,6 +262,8 @@ window.saveEndpoint = function(){
   if (a){ agentName = a; localStorage.setItem("gatelog_agent", a); }
   const f = document.getElementById("flightInput").value.trim().toUpperCase();
   if (f){ localStorage.setItem("gatelog_flight", f); }
+  const x = document.getElementById("expectedInput").value.trim();
+  if (x){ localStorage.setItem("gatelog_expected", x); expectedPax = parseInt(x,10)||0; }
   agentDisplay.textContent = agentName || "";
   banner.style.display = "none";
   toast("Saved");
@@ -543,8 +553,10 @@ function renderLog(){
     if(e.statusClass==="dup") return;
     paxState[e.sequenceNumber]=e.type;
   });
-  boardCountEl.textContent=String(Object.values(paxState).filter(t=>t==="Board").length);
-  deboardCountEl.textContent=String(Object.values(paxState).filter(t=>t==="Deboard").length);
+  const nBoarded = Object.values(paxState).filter(t=>t==="Board").length;
+  const nDeboarded = Object.values(paxState).filter(t=>t==="Deboard").length;
+  boardCountEl.textContent   = String(nBoarded);
+  deboardCountEl.textContent = String(nDeboarded);
   const boardedSeqs=Object.entries(paxState).filter(([,t])=>t==="Board").map(([s])=>parseInt(s)).filter(n=>!isNaN(n));
   logMeta.textContent=boardedSeqs.length?"highest: "+String(Math.max(...boardedSeqs)).padStart(3,"0"):"";
   if(!entries.length){ logList.innerHTML='<div class="log-empty">No scans yet.</div>'; return; }
