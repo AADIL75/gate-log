@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Gate Log — NH212</title>
+<title>Gate Log · NH212</title>
 <style>
 :root{
   --ink:#0c1a17;--paper:#eef1ea;--runway:#1f3d33;
@@ -325,8 +325,24 @@ window.confirmReset = function(){
   setTimeout(() => startScanning(), 500);
   if (endpoint) {
     const params = new URLSearchParams({ action: "reset" });
-    const win = window.open(endpoint + "?" + params.toString(), "_blank");
-    setTimeout(() => { if (win){ try{ win.close(); }catch(e){} } }, 3000);
+    // Open a styled loading page first, then redirect to Apps Script
+    const win = window.open("", "_blank");
+    if (win) {
+      win.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><style>'+
+        'body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;'+
+        'background:#0c1a17;font-family:ui-monospace,monospace;color:#eef1ea;text-align:center;padding:24px;}'+
+        '.box{max-width:300px}'+
+        '.icon{font-size:44px;margin-bottom:12px}'+
+        '.title{font-size:24px;font-weight:700;color:#ff5a1f;margin-bottom:8px}'+
+        '.note{font-size:11px;color:rgba(238,241,234,0.3)}'+
+        '</style></head><body><div class="box">'+
+        '<div class="icon">&#10003;</div>'+
+        '<div class="title">Resetting...</div>'+
+        '<div class="note">Clearing sheet, please wait</div>'+
+        '</div></body></html>');
+      win.location.href = endpoint + "?" + params.toString();
+    }
+    setTimeout(() => { if (win){ try{ win.close(); }catch(e){} } }, 3500);
     toast("Session and sheet cleared");
   } else {
     toast("Session cleared — no endpoint set");
