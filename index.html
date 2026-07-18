@@ -559,42 +559,39 @@ function handleDecoded(rawText){
     agent: agentName || document.getElementById("agentInput").value.trim() || "Unknown"
   });
 
-  // Open styled loading page first, then redirect to Apps Script
-  const win = window.open("", "_blank");
+  // ── Same-device duplicate check FIRST (instant, no network needed) ─
+  const alreadyBoarded   = scannedBoard.has(p.sequenceNumber);
+  const alreadyDeboarded = scannedDeboard.has(p.sequenceNumber);
+  const isSameDeviceDup = (type === "Board" && alreadyBoarded && !alreadyDeboarded)
+                        || (type === "Deboard" && alreadyDeboarded);
 
-  // Risk 2: Detect if popup was blocked by browser
-  if (!win || win.closed || typeof win.closed === "undefined") {
-    // Popup blocked — agent must be warned immediately
-    showOverlay(p.sequenceNumber, p.passengerName, p.seat, type,
-      "NOT LOGGED", "Pop-up blocked — scan NOT sent to sheet.\nAllow pop-ups and scan again.", false, true, false);
-    logLocally(p, type, "error", "Popup blocked");
-    toast("WARNING: Allow pop-ups in your browser settings");
+  if (isSameDeviceDup) {
+    const dupMsg = type === "Board" ? "Already boarded on this device" : "Already deboarded on this device";
+    updateOverlayResult(type, "duplicate", { message: dupMsg, result: "duplicate" }, p);
+    logLocally(p, type, "duplicate", dupMsg);
+    if (navigator.vibrate){ try{ navigator.vibrate([200,100,200,100,200]); }catch(e){} }
     return;
   }
 
-  try {
-    win.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><style>'
-      +'body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;'
-      +'background:#0c1a17;font-family:ui-monospace,monospace;color:#eef1ea;text-align:center}'
-      +'.seq{font-size:64px;font-weight:700;color:#ff5a1f;line-height:1}'
-      +'.msg{font-size:12px;color:rgba(238,241,234,0.4);margin-top:12px;letter-spacing:0.1em;text-transform:uppercase}'
-      +'</style></head><body>'
-      +'<div><div class="seq">' + p.sequenceNumber + '</div>'
-      +'<div class="msg">Logging...</div></div>'
-      +'</body></html>');
-  } catch(e){}
-  win.location.href = endpoint + "?" + params.toString();
+  // ── Send via hidden iframe — no popup, no white screen ───────────
+  // Iframe fires a GET request silently in the background.
+  // Apps Script receives and processes it with LockService.
+  const iframe = document.createElement("iframe");
+  iframe.style.cssText = "display:none;width:0;height:0;border:none;position:absolute;";
+  iframe.src = endpoint + "?" + params.toString();
+  document.body.appendChild(iframe);
 
-  // Show result immediately — window.open reliably writes to sheet.
+  // Show confirmed immediately on screen
   const logResult = type === "Board" ? "boarded" : "deboarded";
   updateOverlayResult(type, "ok", { result: logResult }, p);
   logLocally(p, type, "ok");
   if (type === "Board") { scannedBoard.add(p.sequenceNumber); scannedDeboard.delete(p.sequenceNumber); }
   else { scannedDeboard.add(p.sequenceNumber); }
-  setTimeout(() => { if (win){ try{ win.close(); }catch(e){} } }, 2500);
 
-  // Background duplicate checks at 1.5s and 4s
-  // Two checks: first catches fast duplicates, second catches slower ones
+  // Clean up iframe after 5s
+  setTimeout(() => { if (iframe.parentNode) iframe.parentNode.removeChild(iframe); }, 5000);
+
+  // Cross-device duplicate checks at 2s and 5s via JSONP
   function runDuplicateCheck(delay) {
     setTimeout(() => {
       const cbName = "gatelogCheck_" + Date.now();
@@ -602,12 +599,10 @@ function handleDecoded(rawText){
         delete window[cbName];
         if (chkEl && chkEl.parentNode) chkEl.parentNode.removeChild(chkEl);
         if (r.status === "duplicate") {
-          // Another agent already boarded this passenger — loud warning
           updateOverlayResult(type, "duplicate", r, p);
           logLocally(p, type, "duplicate", r.message);
           if (type === "Board") scannedBoard.delete(p.sequenceNumber);
           else scannedDeboard.delete(p.sequenceNumber);
-          // Vibrate urgently to get agent attention
           if (navigator.vibrate){ try{ navigator.vibrate([200,100,200,100,200]); }catch(e){} }
         }
       };
@@ -618,8 +613,8 @@ function handleDecoded(rawText){
       document.head.appendChild(chkEl);
     }, delay);
   }
-  runDuplicateCheck(1500);
-  runDuplicateCheck(4000);
+  runDuplicateCheck(2000);
+  runDuplicateCheck(5000);
 }
 
 function updateOverlayResult(type, status, result, p){
