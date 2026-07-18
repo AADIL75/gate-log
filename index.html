@@ -129,6 +129,11 @@ button:disabled{opacity:0.35;cursor:not-allowed;}
 .agent-input::placeholder{color:rgba(238,241,234,0.25);}
 .agent-name-display{font-family:var(--mono);font-size:12px;color:var(--beacon);font-weight:600;}
 
+/* Not issued bar */
+.not-issued-bar{background:rgba(90,64,0,0.15);border:1px solid rgba(90,64,0,0.4);border-radius:2px;padding:12px 14px;margin-bottom:12px;}
+.ni-label{font-family:var(--mono);font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#c7b25a;font-weight:600;margin-bottom:4px;}
+.ni-hint{font-family:var(--mono);font-size:10px;color:rgba(238,241,234,0.35);margin-bottom:4px;}
+
 /* Reset modal */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:400;display:none;align-items:center;justify-content:center;padding:24px;}
 .modal-overlay.show{display:flex;animation:fadein 0.2s ease;}
@@ -171,6 +176,20 @@ button:disabled{opacity:0.35;cursor:not-allowed;}
     <button class="mode-btn active-board" id="boardModeBtn" onclick="setMode('board')">&#9992; Boarding</button>
     <div class="mode-divider"></div>
     <button class="mode-btn" id="deboardModeBtn" onclick="setMode('deboard')">&#11015; Deboarding</button>
+  </div>
+
+  <!-- Not Issued input -->
+  <div class="not-issued-bar" id="notIssuedBar">
+    <div class="ni-label">Not Issued Seq Nos</div>
+    <div class="ni-hint">Enter numbers or ranges e.g. 180-212, 195, 200</div>
+    <input id="notIssuedInput" placeholder="e.g. 180-212, 195, 200" type="text"
+      style="width:100%;font-family:var(--mono);font-size:11px;padding:8px 10px;
+      background:rgba(0,0,0,0.3);border:1px solid rgba(238,241,234,0.2);
+      color:var(--paper);border-radius:2px;margin:6px 0;">
+    <button onclick="submitNotIssued()" style="width:100%;font-family:var(--mono);
+      font-size:11px;letter-spacing:0.06em;text-transform:uppercase;padding:9px;
+      border-radius:2px;border:none;background:#5a4000;color:#fff2cc;
+      font-weight:600;cursor:pointer;">Mark as Not Issued on Sheet</button>
   </div>
 
   <div class="scan-panel" id="scanPanel">
@@ -312,6 +331,42 @@ window.confirmReset = function(){
   } else {
     toast("Session cleared — no endpoint set");
   }
+};
+
+// ── Not Issued ────────────────────────────────────────────────────
+window.submitNotIssued = function(){
+  if (!endpoint){ toast("Save your endpoint URL first"); return; }
+  const raw = document.getElementById("notIssuedInput").value.trim();
+  if (!raw){ toast("Enter at least one seq number or range"); return; }
+
+  // Parse input — supports: "180-212, 195, 200" or "180-212" or "195,200"
+  const seqs = [];
+  const parts = raw.split(",");
+  parts.forEach(function(part){
+    part = part.trim();
+    if (part.indexOf("-") > -1) {
+      const range = part.split("-");
+      const from = parseInt(range[0].trim(), 10);
+      const to   = parseInt(range[1].trim(), 10);
+      if (!isNaN(from) && !isNaN(to)) {
+        for (var i = from; i <= to; i++) seqs.push(String(i).padStart(3,"0"));
+      }
+    } else {
+      const n = parseInt(part, 10);
+      if (!isNaN(n)) seqs.push(String(n).padStart(3,"0"));
+    }
+  });
+
+  if (seqs.length === 0){ toast("Could not parse any valid numbers"); return; }
+
+  const params = new URLSearchParams({
+    action: "notissued",
+    seqs:   seqs.join(",")
+  });
+  const win = window.open(endpoint + "?" + params.toString(), "_blank");
+  setTimeout(() => { if (win){ try{ win.close(); }catch(e){} } }, 3000);
+  toast(seqs.length + " seq numbers marked as Not Issued");
+  document.getElementById("notIssuedInput").value = "";
 };
 
 // ── Mode ──────────────────────────────────────────────────────────
