@@ -259,7 +259,6 @@ window.saveEndpoint = function(){
 
 // ── Not Issued ────────────────────────────────────────────────────
 window.submitNotIssued = function(){
-  if (!endpoint){ toast("Save endpoint first"); return; }
   const raw = document.getElementById("notIssuedInput").value.trim();
   if (!raw){ toast("Enter seq numbers first"); return; }
   const seqs = [];
@@ -275,9 +274,11 @@ window.submitNotIssued = function(){
     }
   });
   if (!seqs.length){ toast("Could not parse any numbers"); return; }
-  const win = window.open(endpoint + "?action=notissued&seqs=" + seqs.join(","), "_blank");
-  setTimeout(()=>{ if(win){ try{win.close();}catch(e){} } }, 3000);
-  toast(seqs.length + " seq numbers marked as Not Issued");
+  if (endpoint) {
+    const win = window.open(endpoint + "?action=notissued&seqs=" + seqs.join(","), "_blank");
+    setTimeout(()=>{ if(win){ try{win.close();}catch(e){} } }, 3000);
+  }
+  toast(seqs.length + " seq numbers marked as Not Issued on sheet and displayed below");
   document.getElementById("notIssuedInput").value = "";
   // Show locally on this device
   const display = document.getElementById("niDisplay");
