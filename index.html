@@ -491,9 +491,13 @@ function handleDecoded(rawText){
     return;
   }
 
-  // ── GET to Apps Script with action=log — gets real confirmation ──
+  // ── JSONP request — bypasses CORS, gets real confirmation back ───
+  // JSONP works by injecting a <script> tag with a callback function name.
+  // Apps Script wraps the JSON response in that callback, browser executes it.
+  const cbName = "gatelogCb_" + Date.now();
   const params = new URLSearchParams({
     action:         "log",
+    callback:       cbName,
     sequenceNumber: p.sequenceNumber,
     passengerName:  p.passengerName,
     flightNumber:   p.flightNumber || "",
@@ -502,12 +506,20 @@ function handleDecoded(rawText){
     type,
     agent: agentName || document.getElementById("agentInput").value.trim() || "Unknown"
   });
-  fetch(endpoint + "?" + params.toString())
-  .then(r => r.json())
-  .then(result => {
+
+  // Timeout in case script never loads
+  const timer = setTimeout(() => {
+    delete window[cbName];
+    updateOverlayResult(type, "error", null, p);
+    logLocally(p, type, "error", "Timeout");
+  }, 15000);
+
+  window[cbName] = function(result) {
+    clearTimeout(timer);
+    delete window[cbName];
+    if (scriptEl && scriptEl.parentNode) scriptEl.parentNode.removeChild(scriptEl);
     updateOverlayResult(type, result.status, result, p);
     logLocally(p, type, result.status, result.message);
-    // Update client tracking sets based on server response
     if (result.status === "ok") {
       if (type === "Board") {
         scannedBoard.add(p.sequenceNumber);
@@ -516,12 +528,17 @@ function handleDecoded(rawText){
         scannedDeboard.add(p.sequenceNumber);
       }
     }
-  })
-  .catch(err => {
-    console.error(err);
+  };
+
+  const scriptEl = document.createElement("script");
+  scriptEl.src = endpoint + "?" + params.toString();
+  scriptEl.onerror = function() {
+    clearTimeout(timer);
+    delete window[cbName];
     updateOverlayResult(type, "error", null, p);
     logLocally(p, type, "error", "Network error");
-  });
+  };
+  document.head.appendChild(scriptEl);
 }
 
 function updateOverlayResult(type, status, result, p){
