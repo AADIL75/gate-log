@@ -140,9 +140,7 @@ button:disabled{opacity:0.35;cursor:not-allowed;}
   <div class="setup-banner" id="setupBanner">
     <strong>Setup:</strong>
     <input id="endpointInput" placeholder="https://script.google.com/macros/s/.../exec" type="url">
-    <div style="margin-top:4px;font-size:11px;color:rgba(238,241,234,0.5);">Expected pax (total):</div>
-    <input id="expectedInput" placeholder="e.g. 152" type="number" maxlength="3" style="width:100%;font-family:var(--mono);font-size:11px;padding:8px 10px;background:rgba(0,0,0,0.3);border:1px solid rgba(238,241,234,0.2);color:var(--paper);border-radius:2px;margin:6px 0;">
-    <div style="margin-top:4px;font-size:11px;color:rgba(238,241,234,0.5);">Flight number:</div>
+    <div style="margin-top:4px;font-size:11px;color:rgba(238,241,234,0.5);">Flight number (for validation):</div>
     <input id="flightInput" placeholder="e.g. NH212" maxlength="10" style="width:100%;font-family:var(--mono);font-size:11px;padding:8px 10px;background:rgba(0,0,0,0.3);border:1px solid rgba(238,241,234,0.2);color:var(--paper);border-radius:2px;margin:6px 0;">
     <div style="margin-top:4px;font-size:11px;color:rgba(238,241,234,0.5);">Your name:</div>
     <input id="agentInput" placeholder="Enter your name" maxlength="30">
@@ -241,9 +239,7 @@ if (agentName) { agentInput.value = agentName; agentDisplay.textContent = agentN
 const savedFlight = localStorage.getItem("gatelog_flight") || "";
 const flightInputEl = document.getElementById("flightInput");
 if (flightInputEl && savedFlight) flightInputEl.value = savedFlight;
-let expectedPax = parseInt(localStorage.getItem("gatelog_expected")||"0",10)||0;
-const expectedInputEl = document.getElementById("expectedInput");
-if (expectedInputEl && expectedPax) expectedInputEl.value = String(expectedPax);
+
 
 window.editEndpoint = function(){
   localStorage.removeItem("gatelog_ep");
@@ -262,8 +258,7 @@ window.saveEndpoint = function(){
   if (a){ agentName = a; localStorage.setItem("gatelog_agent", a); }
   const f = document.getElementById("flightInput").value.trim().toUpperCase();
   if (f){ localStorage.setItem("gatelog_flight", f); }
-  const x = document.getElementById("expectedInput").value.trim();
-  if (x){ localStorage.setItem("gatelog_expected", x); expectedPax = parseInt(x,10)||0; }
+
   agentDisplay.textContent = agentName || "";
   banner.style.display = "none";
   toast("Saved");
