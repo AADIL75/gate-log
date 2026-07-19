@@ -14,7 +14,7 @@
 }
 *{box-sizing:border-box;margin:0;padding:0;}
 html,body{background:var(--ink);color:var(--paper);font-family:var(--sans);min-height:100vh;display:flex;flex-direction:column;}
-header{padding:14px 18px 10px;border-bottom:1px solid rgba(238,241,234,0.1);}
+header{padding:14px 18px 10px;border-bottom:1px solid rgba(238,241,234,0.1);position:sticky;top:0;z-index:100;background:var(--ink);}
 .wordmark{font-family:var(--mono);font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:var(--beacon);}
 .wordmark b{color:var(--paper);}
 h1{font-family:var(--mono);font-weight:600;font-size:clamp(18px,5vw,24px);margin-top:3px;}
@@ -314,6 +314,11 @@ window.confirmReset    = function(){
   dismissOverlay();
   stopScanning();
   setTimeout(()=>startScanning(), 500);
+  // Clear not issued display
+  const niDisplay = document.getElementById("niDisplay");
+  const niList    = document.getElementById("niList");
+  if (niDisplay) niDisplay.style.display = "none";
+  if (niList)    niList.textContent = "";
   if (endpoint) {
     const win = window.open(endpoint + "?action=reset", "_blank");
     setTimeout(()=>{ if(win){ try{win.close();}catch(e){} } }, 3000);
