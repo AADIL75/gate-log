@@ -314,17 +314,12 @@ window.confirmReset    = function(){
   dismissOverlay();
   stopScanning();
   setTimeout(()=>startScanning(), 500);
-  toast("Session cleared — resetting sheet...");
   if (endpoint) {
-    // Use hidden iframe — follows redirects silently, no white screen
-    var iframe = document.createElement("iframe");
-    iframe.style.cssText = "display:none;width:0;height:0;border:none;position:absolute;top:-100px;";
-    iframe.src = endpoint + "?action=reset";
-    document.body.appendChild(iframe);
-    setTimeout(function(){
-      if (iframe.parentNode) iframe.parentNode.removeChild(iframe);
-      toast("Sheet cleared");
-    }, 4000);
+    const win = window.open(endpoint + "?action=reset", "_blank");
+    setTimeout(()=>{ if(win){ try{win.close();}catch(e){} } }, 3000);
+    toast("Session and sheet cleared");
+  } else {
+    toast("Session cleared");
   }
 };
 
