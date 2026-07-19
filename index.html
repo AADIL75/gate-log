@@ -169,6 +169,7 @@ button:disabled{opacity:0.35;cursor:not-allowed;}
   </div>
   <div class="controls">
     <button id="startBtn" class="primary" onclick="startScanning()">Start camera</button>
+    <button id="pauseBtn" disabled onclick="togglePause()" style="background:rgba(255,90,31,0.15);border-color:var(--beacon);color:var(--beacon);">Pause</button>
     <button id="stopBtn" disabled onclick="stopScanning()">Stop</button>
   </div>
   <div style="font-family:var(--mono);font-size:9px;color:rgba(238,241,234,0.3);letter-spacing:0.06em;margin-top:10px;text-align:right;">counts are per device — sheet has full total</div>
@@ -392,6 +393,19 @@ let codeReader, lastRaw="", lastAt=0, overlayVisible=false;
 
 function setLive(on,label){ liveDot.classList.toggle("live",on); statusTx.textContent=label; }
 
+let paused=false;
+window.togglePause=function(){
+  paused=!paused;
+  const btn=document.getElementById("pauseBtn");
+  if(paused){
+    btn.textContent="Resume"; btn.style.background="var(--beacon)"; btn.style.color="#1a0d05";
+    setLive(false,"Paused"); hintTx.textContent="Tap Resume"; releaseWakeLock();
+  } else {
+    btn.textContent="Pause"; btn.style.background="rgba(255,90,31,0.15)"; btn.style.color="var(--beacon)";
+    setLive(true,"Scanning..."); hintTx.textContent="Hold barcode steady"; requestWakeLock();
+  }
+};
+
 window.startScanning = async function(){
   if(!window.ZXingBrowser||!window.ZXing){ toast("Scanner library not loaded"); return; }
   try{
@@ -404,15 +418,22 @@ window.startScanning = async function(){
     hints.set(window.ZXing.DecodeHintType.TRY_HARDER,true);
     codeReader=new window.ZXingBrowser.BrowserMultiFormatReader(hints);
     document.getElementById("startBtn").disabled=true;
+    document.getElementById("startBtn").disabled=true;
     document.getElementById("stopBtn").disabled=false;
+    document.getElementById("pauseBtn").disabled=false;
+    paused=false;
     setLive(true,"Scanning..."); hintTx.textContent="Hold barcode steady";
     await requestWakeLock();
-    try{ const p=await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}}); p.getTracks().forEach(t=>t.stop()); }catch(e){}
+    try{ const p=await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment",width:{ideal:1280},height:{ideal:720}}}); p.getTracks().forEach(t=>t.stop()); }catch(e){}
     const devices=await window.ZXingBrowser.BrowserCodeReader.listVideoInputDevices();
     const backCam=devices.find(d=>/back|rear|environment/i.test(d.label))||devices[devices.length-1];
+    let lastProcessed=0;
     await codeReader.decodeFromVideoDevice(backCam?backCam.deviceId:undefined,video,result=>{
-      if(!result||overlayVisible) return;
-      const text=result.getText(), now=Date.now();
+      if(!result||overlayVisible||paused) return;
+      const now=Date.now();
+      if(now-lastProcessed<600) return; // throttle to ~1.5 checks/sec — saves CPU/battery
+      lastProcessed=now;
+      const text=result.getText();
       if(text===lastRaw&&(now-lastAt)<8000) return;
       lastRaw=text; lastAt=now;
       handleDecoded(text);
@@ -422,16 +443,24 @@ window.startScanning = async function(){
     toast(e.name==="NotAllowedError"?"Camera permission denied":"Couldn't start camera");
     document.getElementById("startBtn").disabled=false;
     document.getElementById("stopBtn").disabled=true;
+    document.getElementById("pauseBtn").disabled=true;
   }
 };
 
+
+
 window.stopScanning = function(){
   if(codeReader){ try{codeReader.reset();}catch(e){} }
+  paused=false;
   setLive(false,"Camera off"); hintTx.textContent="Tap start";
   document.getElementById("startBtn").disabled=false;
   document.getElementById("stopBtn").disabled=true;
+  document.getElementById("pauseBtn").disabled=true;
+  const pb=document.getElementById("pauseBtn");
+  pb.textContent="Pause"; pb.style.background="rgba(255,90,31,0.15)"; pb.style.color="var(--beacon)";
   releaseWakeLock();
 };
+
 
 // ── Overlay ───────────────────────────────────────────────────────
 const resultOverlay=document.getElementById("resultOverlay");
