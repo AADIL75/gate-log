@@ -425,11 +425,10 @@ window.startScanning = async function(){
     hints.set(window.ZXing.DecodeHintType.POSSIBLE_FORMATS,[
       window.ZXing.BarcodeFormat.PDF_417,
       window.ZXing.BarcodeFormat.QR_CODE,
-      window.ZXing.BarcodeFormat.AZTEC,
-      window.ZXing.BarcodeFormat.CODE_128,
-      window.ZXing.BarcodeFormat.DATA_MATRIX
+      window.ZXing.BarcodeFormat.AZTEC
     ]);
-    hints.set(window.ZXing.DecodeHintType.TRY_HARDER,true);
+    // No TRY_HARDER — faster scanning, still reliable for boarding passes
+
     codeReader=new window.ZXingBrowser.BrowserMultiFormatReader(hints);
     document.getElementById("startBtn").disabled=true;
     document.getElementById("startBtn").disabled=true;
