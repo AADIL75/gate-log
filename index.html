@@ -89,14 +89,6 @@ button:disabled{opacity:0.35;cursor:not-allowed;}
 .result-overlay.board-ov{background:#0c2010;}
 .result-overlay.deboard-ov{background:#0a1a2a;}
 .result-overlay.dup-ov{background:#1a0800;}
-.result-overlay.passport-ov{background:#0a0a2a;}
-.result-overlay.passport-ov .ov-seq{color:#6aaadd;font-size:24px;word-break:break-all;}
-.result-overlay.passport-ov .ov-badge{background:#2a6aaa;color:#fff;}
-.mode-btn.active-passport{background:#2a6aaa;color:#fff;font-weight:600;}
-.mrz-details{font-family:var(--mono);font-size:12px;color:rgba(238,241,234,0.85);
-  text-align:left;width:100%;max-width:340px;background:rgba(42,106,170,0.15);
-  border:1px solid rgba(42,106,170,0.3);border-radius:4px;padding:14px;
-  margin-bottom:16px;line-height:2.2;display:none;}
 .result-overlay.wrongflight-ov{background:#1a0000;}
 @keyframes fadein{from{opacity:0}to{opacity:1}}
 .ov-icon{font-size:48px;margin-bottom:6px;}
@@ -166,8 +158,7 @@ button:disabled{opacity:0.35;cursor:not-allowed;}
     <button class="mode-btn active-board" id="boardModeBtn" onclick="setMode('board')">&#9992; Boarding</button>
     <div class="mode-divider"></div>
     <button class="mode-btn" id="deboardModeBtn" onclick="setMode('deboard')">&#11015; Deboarding</button>
-    <div class="mode-divider"></div>
-    <button class="mode-btn" id="passportModeBtn" onclick="setMode('passport')">&#128210; Passport</button>
+
   </div>
   <div class="scan-panel" id="scanPanel">
     <video id="video" muted playsinline></video>
@@ -216,7 +207,6 @@ button:disabled{opacity:0.35;cursor:not-allowed;}
   <div class="ov-seat" id="ovSeat"></div>
   <div class="ov-badge" id="ovBadge"></div>
   <div class="ov-note" id="ovNote"></div>
-  <div class="mrz-details" id="mrzDetails"></div>
   <button class="ov-dismiss" onclick="dismissOverlay()">&#9654; Next passenger</button>
 </div>
 
@@ -232,12 +222,8 @@ button:disabled{opacity:0.35;cursor:not-allowed;}
   </div>
 </div>
 
-<!-- Hidden file input for passport photo capture -->
-<input type="file" id="passportCapture" accept="image/*" capture="environment"
-  style="display:none;" onchange="processPassportPhoto(this)">
 <div class="toast" id="toast"></div>
 
-<script src="https://unpkg.com/tesseract.js@5/dist/tesseract.min.js"></script>
 <script src="https://unpkg.com/@zxing/library@latest"></script>
 <script src="https://unpkg.com/@zxing/browser@latest"></script>
 <script>
@@ -357,18 +343,15 @@ window.confirmReset    = function(){
 let currentMode = "board";
 window.setMode = function(mode){
   currentMode = mode;
-  const isBoard    = mode === "board";
-  const isDeboard  = mode === "deboard";
-  const isPassport = mode === "passport";
-  document.getElementById("boardModeBtn").className    = "mode-btn" + (isBoard    ? " active-board"    : "");
-  document.getElementById("deboardModeBtn").className  = "mode-btn" + (isDeboard  ? " active-deboard"  : "");
-  document.getElementById("passportModeBtn").className = "mode-btn" + (isPassport ? " active-passport" : "");
+  const isBoard   = mode === "board";
+  const isDeboard = mode === "deboard";
+  document.getElementById("boardModeBtn").className   = "mode-btn" + (isBoard   ? " active-board"   : "");
+  document.getElementById("deboardModeBtn").className = "mode-btn" + (isDeboard ? " active-deboard" : "");
   document.getElementById("scanPanel").classList.toggle("deboard-mode", isDeboard);
   const ov = document.getElementById("modeOverlay");
-  ov.textContent = isBoard ? "Boarding" : isDeboard ? "Deboarding" : "Tap Start to capture passport";
-  ov.className = "mode-overlay " + (isPassport ? "deboard" : mode);
+  ov.textContent = isBoard ? "Boarding" : "Deboarding";
+  ov.className = "mode-overlay " + mode;
   document.getElementById("startBtn").className = isBoard ? "primary" : "primary-deboard";
-  document.getElementById("startBtn").textContent = isPassport ? "Capture Passport" : "Start camera";
 };
 
 // ── Toast ─────────────────────────────────────────────────────────
@@ -435,18 +418,16 @@ window.togglePause=function(){
 };
 
 window.startScanning = async function(){
-  // Passport mode — use photo capture for reliable MRZ reading
-  if (currentMode === "passport") {
-    document.getElementById("passportCapture").click();
-    return;
-  }
+
   if(!window.ZXingBrowser||!window.ZXing){ toast("Scanner library not loaded"); return; }
   try{
     const hints=new Map();
     hints.set(window.ZXing.DecodeHintType.POSSIBLE_FORMATS,[
       window.ZXing.BarcodeFormat.PDF_417,
       window.ZXing.BarcodeFormat.QR_CODE,
-      window.ZXing.BarcodeFormat.CODE_128
+      window.ZXing.BarcodeFormat.AZTEC,
+      window.ZXing.BarcodeFormat.CODE_128,
+      window.ZXing.BarcodeFormat.DATA_MATRIX
     ]);
     hints.set(window.ZXing.DecodeHintType.TRY_HARDER,true);
     codeReader=new window.ZXingBrowser.BrowserMultiFormatReader(hints);
@@ -483,10 +464,8 @@ window.startScanning = async function(){
 
 
 window.stopScanning = function(){
-  stopPassportMode();
-  if(video.srcObject){ video.srcObject.getTracks().forEach(t=>t.stop()); video.srcObject=null; }
+
   if(codeReader){ try{codeReader.reset();}catch(e){} }
-  document.getElementById("startBtn").textContent = "Start camera";
   paused=false;
   setLive(false,"Camera off"); hintTx.textContent="Tap start";
   document.getElementById("startBtn").disabled=false;
@@ -520,8 +499,7 @@ window.dismissOverlay=function(){
   resultOverlay.className="result-overlay";
   overlayVisible=false;
   lastRaw=""; lastAt=0;
-  const mrzDet=document.getElementById("mrzDetails");
-  if(mrzDet){ mrzDet.style.display="none"; mrzDet.innerHTML=""; }
+
 };
 
 // ── Tracking (client-side) ────────────────────────────────────────
@@ -609,159 +587,7 @@ function handleDecoded(rawText){
 }
 
 
-// ── Passport photo processing ────────────────────────────────────
-async function processPassportPhoto(input) {
-  if (!input.files || !input.files[0]) return;
-  const file = input.files[0];
-  input.value = "";
 
-  // Show processing overlay immediately so agent knows something is happening
-  const det = document.getElementById("mrzDetails");
-  if (det) { det.style.display="block"; det.innerHTML="<b>Reading passport... please wait</b>"; }
-  resultOverlay.className = "result-overlay show passport-ov";
-  ovSeq.textContent = "...";
-  ovName.textContent = "Processing photo";
-  ovBadge.textContent = "OCR in progress";
-  document.getElementById("ovIcon").textContent = "";
-  overlayVisible = true;
-
-  try {
-    // Load image
-    const img = await new Promise((res, rej) => {
-      const i = new Image();
-      const url = URL.createObjectURL(file);
-      i.onload = () => { URL.revokeObjectURL(url); res(i); };
-      i.onerror = rej;
-      i.src = url;
-    });
-
-    // Try full image first, then crop bottom 40% (MRZ zone)
-    // Using full image is more forgiving if agent didn't frame perfectly
-    const attempts = [
-      { y: 0,                           h: img.height },           // full image
-      { y: Math.floor(img.height*0.55), h: Math.floor(img.height*0.45) }, // bottom 45%
-      { y: Math.floor(img.height*0.65), h: Math.floor(img.height*0.35) }  // bottom 35%
-    ];
-
-    let mrz = null;
-    const worker = await getTesseractWorker();
-
-    for (let attempt of attempts) {
-      const canvas = document.createElement("canvas");
-      canvas.width  = img.width;
-      canvas.height = attempt.h;
-      const ctx = canvas.getContext("2d");
-      ctx.filter = "contrast(1.8) grayscale(1) brightness(1.1)";
-      ctx.drawImage(img, 0, attempt.y, img.width, attempt.h, 0, 0, img.width, attempt.h);
-
-      const { data:{ text } } = await worker.recognize(canvas);
-      console.log("OCR attempt:", attempt, "text:", text.slice(0,100));
-      mrz = parseMRZ(text);
-      if (mrz) break;
-    }
-
-    if (mrz) {
-      handlePassport(mrz);
-    } else {
-      overlayVisible = false;
-      resultOverlay.className = "result-overlay";
-      if (det) { det.style.display="none"; det.innerHTML=""; }
-      toast("MRZ not found — take photo closer to the MRZ lines at bottom of passport");
-    }
-  } catch(e) {
-    console.error("Passport OCR error:", e);
-    overlayVisible = false;
-    resultOverlay.className = "result-overlay";
-    if (det) { det.style.display="none"; det.innerHTML=""; }
-    toast("Error processing photo: " + e.message);
-  }
-}
-
-let _tesseractWorker = null;
-async function getTesseractWorker() {
-  if (_tesseractWorker) return _tesseractWorker;
-  toast("Loading OCR engine...");
-  _tesseractWorker = await Tesseract.createWorker("eng", 1, {
-    logger: m => { if(m.status==="recognizing text") toast("Reading passport " + Math.round(m.progress*100) + "%"); }
-  });
-  await _tesseractWorker.setParameters({
-    tessedit_char_whitelist: "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789<",
-    tessedit_pageseg_mode:   "6"
-  });
-  toast("OCR ready");
-  return _tesseractWorker;
-}
-
-// ── MRZ Parser ───────────────────────────────────────────────────
-function parseMRZ(text) {
-  const lines = text.split("\n").map(l => l.replace(/\s/g,"").toUpperCase()).filter(l => l.length >= 40);
-  const line1 = lines.find(l => /^P[A-Z<]/.test(l));
-  const line2 = lines.find(l => l !== line1 && /^\d/.test(l) && l.length >= 42);
-  if (!line1 || !line2) return null;
-  try {
-    const namePart = line1.slice(5,44);
-    const parts    = namePart.split("<<");
-    const surname  = (parts[0]||"").replace(/</g," ").trim();
-    const given    = (parts[1]||"").replace(/</g," ").trim();
-    const passNum  = line2.slice(0,9).replace(/</g,"").trim();
-    const nat      = line2.slice(10,13).replace(/</g,"").trim();
-    const dobRaw   = line2.slice(13,19);
-    const sex      = line2.slice(20,21);
-    const expRaw   = line2.slice(21,27);
-    function parseDate(s){
-      const yy=parseInt(s.slice(0,2),10), mm=s.slice(2,4), dd=s.slice(4,6);
-      return dd+"/"+mm+"/"+(yy<30?2000+yy:1900+yy);
-    }
-    if (!passNum || passNum.length < 5) return null;
-    return { surname, given, passportNumber:passNum, nationality:nat,
-             dob:parseDate(dobRaw), sex:sex==="M"?"Male":sex==="F"?"Female":sex,
-             expiry:parseDate(expRaw) };
-  } catch(e){ return null; }
-}
-
-// ── Passport OCR ──────────────────────────────────────────────────
-let tesseractWorker = null;
-let passportInterval = null;
-let lastPassportNum  = "";
-let lastPassportAt   = 0;
-
-
-
-function startPassportMode() { /* not used - photo capture mode */ }
-function stopPassportMode() { /* not used - photo capture mode */ }
-
-function handlePassport(mrz) {
-  if (navigator.vibrate){ try{navigator.vibrate(40);}catch(e){} }
-  const det = document.getElementById("mrzDetails");
-  if (det) {
-    det.style.display = "block";
-    det.innerHTML =
-      "<b>Surname:</b> "     + mrz.surname       + "<br>" +
-      "<b>Given names:</b> " + mrz.given         + "<br>" +
-      "<b>Passport No:</b> " + mrz.passportNumber+ "<br>" +
-      "<b>Nationality:</b> " + mrz.nationality   + "<br>" +
-      "<b>DOB:</b> "         + mrz.dob           + "<br>" +
-      "<b>Sex:</b> "         + mrz.sex           + "<br>" +
-      "<b>Expiry:</b> "      + mrz.expiry;
-  }
-  showOverlay(mrz.passportNumber, mrz.surname+" / "+mrz.given, "", "passport", "", "Passport Read", false);
-  resultOverlay.className = "result-overlay show passport-ov";
-
-  if (endpoint) {
-    const params = new URLSearchParams({
-      action:"passport", surname:mrz.surname, given:mrz.given,
-      passport:mrz.passportNumber, nationality:mrz.nationality,
-      dob:mrz.dob, sex:mrz.sex, expiry:mrz.expiry,
-      agent: agentName || agentInput.value.trim() || "Unknown"
-    });
-    const win = window.open(endpoint+"?"+params.toString(),"_blank");
-    setTimeout(()=>{ if(win){ try{win.close();}catch(e){} } },2500);
-  }
-  entries.unshift({ sequenceNumber:mrz.passportNumber,
-    passengerName:mrz.surname+"/"+mrz.given,
-    type:"Passport", statusClass:"ok", statusLabel:"Logged" });
-  renderLog();
-}
 
 // ── Session log + counts ──────────────────────────────────────────
 const logList=document.getElementById("logList");
