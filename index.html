@@ -613,52 +613,82 @@ function handleDecoded(rawText){
 async function processPassportPhoto(input) {
   if (!input.files || !input.files[0]) return;
   const file = input.files[0];
-  input.value = ""; // reset so same file can be selected again
+  input.value = "";
 
-  toast("Reading passport...");
+  // Show processing overlay immediately so agent knows something is happening
+  const det = document.getElementById("mrzDetails");
+  if (det) { det.style.display="block"; det.innerHTML="<b>Reading passport... please wait</b>"; }
+  resultOverlay.className = "result-overlay show passport-ov";
+  ovSeq.textContent = "...";
+  ovName.textContent = "Processing photo";
+  ovBadge.textContent = "OCR in progress";
+  document.getElementById("ovIcon").textContent = "";
+  overlayVisible = true;
 
-  // Load image
-  const img = new Image();
-  const url = URL.createObjectURL(file);
-  img.onload = async function() {
-    URL.revokeObjectURL(url);
+  try {
+    // Load image
+    const img = await new Promise((res, rej) => {
+      const i = new Image();
+      const url = URL.createObjectURL(file);
+      i.onload = () => { URL.revokeObjectURL(url); res(i); };
+      i.onerror = rej;
+      i.src = url;
+    });
 
-    // Draw to canvas — crop bottom 35% for MRZ zone
-    const canvas = document.createElement("canvas");
-    const mrzH = Math.floor(img.height * 0.35);
-    canvas.width  = img.width;
-    canvas.height = mrzH;
-    const ctx = canvas.getContext("2d");
-    // Enhance contrast for better OCR
-    ctx.filter = "contrast(1.5) grayscale(1)";
-    ctx.drawImage(img, 0, img.height - mrzH, img.width, mrzH, 0, 0, img.width, mrzH);
+    // Try full image first, then crop bottom 40% (MRZ zone)
+    // Using full image is more forgiving if agent didn't frame perfectly
+    const attempts = [
+      { y: 0,                           h: img.height },           // full image
+      { y: Math.floor(img.height*0.55), h: Math.floor(img.height*0.45) }, // bottom 45%
+      { y: Math.floor(img.height*0.65), h: Math.floor(img.height*0.35) }  // bottom 35%
+    ];
 
-    try {
-      const worker = await getTesseractWorker();
+    let mrz = null;
+    const worker = await getTesseractWorker();
+
+    for (let attempt of attempts) {
+      const canvas = document.createElement("canvas");
+      canvas.width  = img.width;
+      canvas.height = attempt.h;
+      const ctx = canvas.getContext("2d");
+      ctx.filter = "contrast(1.8) grayscale(1) brightness(1.1)";
+      ctx.drawImage(img, 0, attempt.y, img.width, attempt.h, 0, 0, img.width, attempt.h);
+
       const { data:{ text } } = await worker.recognize(canvas);
-      console.log("OCR raw:", text);
-      const mrz = parseMRZ(text);
-      if (mrz) {
-        handlePassport(mrz);
-      } else {
-        toast("Could not read MRZ — ensure MRZ lines are visible and well lit. Try again.");
-      }
-    } catch(e) {
-      console.error(e);
-      toast("OCR error — try again");
+      console.log("OCR attempt:", attempt, "text:", text.slice(0,100));
+      mrz = parseMRZ(text);
+      if (mrz) break;
     }
-  };
-  img.src = url;
+
+    if (mrz) {
+      handlePassport(mrz);
+    } else {
+      overlayVisible = false;
+      resultOverlay.className = "result-overlay";
+      if (det) { det.style.display="none"; det.innerHTML=""; }
+      toast("MRZ not found — take photo closer to the MRZ lines at bottom of passport");
+    }
+  } catch(e) {
+    console.error("Passport OCR error:", e);
+    overlayVisible = false;
+    resultOverlay.className = "result-overlay";
+    if (det) { det.style.display="none"; det.innerHTML=""; }
+    toast("Error processing photo: " + e.message);
+  }
 }
 
 let _tesseractWorker = null;
 async function getTesseractWorker() {
   if (_tesseractWorker) return _tesseractWorker;
-  _tesseractWorker = await Tesseract.createWorker("eng", 1, { logger: ()=>{} });
+  toast("Loading OCR engine...");
+  _tesseractWorker = await Tesseract.createWorker("eng", 1, {
+    logger: m => { if(m.status==="recognizing text") toast("Reading passport " + Math.round(m.progress*100) + "%"); }
+  });
   await _tesseractWorker.setParameters({
     tessedit_char_whitelist: "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789<",
     tessedit_pageseg_mode:   "6"
   });
+  toast("OCR ready");
   return _tesseractWorker;
 }
 
