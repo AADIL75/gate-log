@@ -378,9 +378,41 @@ function parseBoardingPass(raw){
   const seqRaw=take(5).trim();
   const seqNum=parseInt(seqRaw,10);
   const seq=isNaN(seqNum)?seqRaw:String(seqNum).padStart(3,"0");
+  take(1); // passenger status
+
+  // ── Conditional section — ticket number ──────────────────────────
+  let ticketNumber = "";
+  try {
+    if (i < raw.length) {
+      const condSizeHex = raw.slice(i, i+2);
+      const condSize = parseInt(condSizeHex, 16);
+      if (!isNaN(condSize) && condSize > 0) {
+        i += 2; // skip size field
+        // Unique conditional fields (structured message)
+        if (i < raw.length && raw[i] === ">") {
+          i += 1; // skip > marker
+          const versionNum = i < raw.length ? raw[i] : "";
+          i += 1; // version number
+          const uniqueSizeHex = raw.slice(i, i+2);
+          const uniqueSize = parseInt(uniqueSizeHex, 16);
+          i += 2 + (isNaN(uniqueSize) ? 0 : uniqueSize); // skip unique fields
+        }
+        // Individual leg conditional fields
+        // Airline numeric code (3) + document form/serial (10) = ticket number
+        if (i + 13 <= raw.length) {
+          const ticketRaw = raw.slice(i, i+13).trim().replace(/\s/g,"");
+          if (/^\d+$/.test(ticketRaw) && ticketRaw.length >= 10) {
+            ticketNumber = ticketRaw;
+          }
+        }
+      }
+    }
+  } catch(e) { ticketNumber = ""; }
+
   return { passengerName:name, pnr, from, to,
     flightNumber:(carrier+fltNum).replace(/\s+/g,""),
-    seat, sequenceNumber:seq, sequenceValid:!isNaN(seqNum) };
+    seat, sequenceNumber:seq, sequenceValid:!isNaN(seqNum),
+    ticketNumber };
 }
 
 // ── Wake Lock ─────────────────────────────────────────────────────
@@ -576,6 +608,7 @@ function handleDecoded(rawText){
       flightNumber:   p.flightNumber||"",
       seat:           p.seat||"",
       pnr:            p.pnr||"",
+      ticket:         p.ticketNumber||"",
       type,
       agent: agentName || agentInput.value.trim() || "Unknown",
       expected: localStorage.getItem("gatelog_expected") || "0"
