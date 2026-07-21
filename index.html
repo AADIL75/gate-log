@@ -205,6 +205,7 @@ button:disabled{opacity:0.35;cursor:not-allowed;}
   <div class="ov-seq" id="ovSeq">000</div>
   <div class="ov-name" id="ovName"></div>
   <div class="ov-seat" id="ovSeat"></div>
+  <div id="ovTicket" style="font-family:var(--mono);font-size:11px;color:rgba(238,241,234,0.4);margin-bottom:6px;letter-spacing:0.06em;"></div>
   <div class="ov-badge" id="ovBadge"></div>
   <div class="ov-note" id="ovNote"></div>
   <button class="ov-dismiss" onclick="dismissOverlay()">&#9654; Next passenger</button>
@@ -512,9 +513,11 @@ const ovBadge=document.getElementById("ovBadge");
 const ovIcon=document.getElementById("ovIcon");
 const ovNote=document.getElementById("ovNote");
 
-function showOverlay(seq,name,seat,cls,icon,badge,note){
+function showOverlay(seq,name,seat,cls,icon,badge,note,ticket){
   ovSeq.textContent=seq; ovName.textContent=name;
   ovSeat.textContent=seat?"Seat "+seat:"";
+  const ovTicket=document.getElementById("ovTicket");
+  if(ovTicket) ovTicket.textContent=ticket?"TKT: "+ticket:"";
   ovBadge.textContent=badge; ovNote.textContent=note;
   ovIcon.textContent=icon;
   resultOverlay.className="result-overlay show "+cls;
@@ -522,12 +525,13 @@ function showOverlay(seq,name,seat,cls,icon,badge,note){
 }
 
 window.dismissOverlay=function(){
+window.dismissOverlay=function(){
   resultOverlay.className="result-overlay";
   overlayVisible=false;
   lastRaw=""; lastAt=0;
-
+  const ovt=document.getElementById("ovTicket");
+  if(ovt) ovt.textContent="";
 };
-
 // ── Tracking (client-side) ────────────────────────────────────────
 const scannedBoard   = new Set();
 const scannedDeboard = new Set();
@@ -548,9 +552,9 @@ function handleDecoded(rawText){
   const expectedNorm   = expectedFlight.replace(/^([A-Z]+)0+(\d)/,"$1$2");
   if (scannedFlight && scannedFlight !== expectedNorm) {
     showOverlay(p.sequenceNumber, p.passengerName, p.seat,
+    showOverlay(p.sequenceNumber, p.passengerName, p.seat,
       "wrongflight-ov", "⛔", "Wrong Flight",
-      "This pass is for " + p.flightNumber + " — not " + expectedFlight);
-    if(navigator.vibrate){ try{navigator.vibrate([300,100,300,100,300]);}catch(e){} }
+      "This pass is for " + p.flightNumber + " — not " + expectedFlight, p.ticketNumber);
     entries.unshift({ sequenceNumber:p.sequenceNumber, passengerName:p.passengerName,
       type, statusClass:"dup", statusLabel:"Wrong flight" });
     renderLog();
@@ -567,7 +571,7 @@ function handleDecoded(rawText){
     showOverlay(p.sequenceNumber, p.passengerName, p.seat,
       "dup-ov", "\u26A0",
       type==="Board"?"Already Boarded":"Already Deboarded",
-      "Scanned on this device already");
+      "Scanned on this device already", p.ticketNumber);
     if(navigator.vibrate){ try{navigator.vibrate([200,100,200,100,200]);}catch(e){} }
     entries.unshift({ sequenceNumber:p.sequenceNumber, passengerName:p.passengerName,
       type, statusClass:"dup", statusLabel:"Duplicate" });
@@ -579,7 +583,7 @@ function handleDecoded(rawText){
   const badge = isReboard?"Re-boarded" : type==="Board"?"Boarded":"Deboarded";
   const cls   = type==="Board"?"board-ov":"deboard-ov";
   const icon  = type==="Board"?"\u2708":"\u2B07";
-  showOverlay(p.sequenceNumber, p.passengerName, p.seat, cls, icon, badge, "Logged to sheet");
+  showOverlay(p.sequenceNumber, p.passengerName, p.seat, cls, icon, badge, "Logged to sheet", p.ticketNumber);
 
   // Update client tracking
   if(type==="Board"){
