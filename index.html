@@ -384,24 +384,19 @@ function parseBoardingPass(raw){
   let ticketNumber = "";
   try {
     if (i < raw.length) {
-      const condSizeHex = raw.slice(i, i+2);
-      const condSize = parseInt(condSizeHex, 16);
-      if (!isNaN(condSize) && condSize > 0) {
-        i += 2; // skip size field
-        // Unique conditional fields (structured message)
-        if (i < raw.length && raw[i] === ">") {
-          i += 1; // skip > marker
-          const versionNum = i < raw.length ? raw[i] : "";
-          i += 1; // version number
-          const uniqueSizeHex = raw.slice(i, i+2);
-          const uniqueSize = parseInt(uniqueSizeHex, 16);
-          i += 2 + (isNaN(uniqueSize) ? 0 : uniqueSize); // skip unique fields
-        }
-        // Individual leg conditional fields
-        // Airline numeric code (3) + document form/serial (10) = ticket number
-        if (i + 13 <= raw.length) {
-          const ticketRaw = raw.slice(i, i+13).trim().replace(/\s/g,"");
-          if (/^\d+$/.test(ticketRaw) && ticketRaw.length >= 10) {
+      // i is now at pos 58 — variable section size (2 hex chars)
+      const condSize = parseInt(raw.slice(i, i+2), 16);
+      if (!isNaN(condSize) && condSize > 0 && raw[i+2] === ">") {
+        // Skip: size(2) + >(1) + version(1) = 4 chars to get to unique section size
+        const uniqueSize = parseInt(raw.slice(i+4, i+6), 16);
+        if (!isNaN(uniqueSize)) {
+          // Skip to individual leg conditional: 6 (size+>+ver+uniqueSize) + uniqueSize + 2 (leg size field)
+          const legStart = i + 6 + uniqueSize + 2;
+          // Extract from legStart to next space — everything before " NH/BA/OS etc"
+          const legData = raw.slice(legStart);
+          const spaceIdx = legData.indexOf(" ");
+          const ticketRaw = (spaceIdx > -1 ? legData.slice(0, spaceIdx) : legData.slice(0, 14)).trim();
+          if (ticketRaw.length >= 10) {
             ticketNumber = ticketRaw;
           }
         }
