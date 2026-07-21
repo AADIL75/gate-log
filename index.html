@@ -459,20 +459,26 @@ window.startScanning = async function(){
 
     codeReader=new window.ZXingBrowser.BrowserMultiFormatReader(hints);
     document.getElementById("startBtn").disabled=true;
-    document.getElementById("startBtn").disabled=true;
     document.getElementById("stopBtn").disabled=false;
     document.getElementById("pauseBtn").disabled=false;
     paused=false;
     setLive(true,"Scanning..."); hintTx.textContent="Hold barcode steady";
     await requestWakeLock();
-    try{ const p=await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment",width:{ideal:1280},height:{ideal:720}}}); p.getTracks().forEach(t=>t.stop()); }catch(e){}
+    try{ const p=await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}}); p.getTracks().forEach(t=>t.stop()); }catch(e){}
     const devices=await window.ZXingBrowser.BrowserCodeReader.listVideoInputDevices();
     const backCam=devices.find(d=>/back|rear|environment/i.test(d.label))||devices[devices.length-1];
     let lastProcessed=0;
-    await codeReader.decodeFromVideoDevice(backCam?backCam.deviceId:undefined,video,result=>{
+    const scanConstraints={
+      video:{
+        deviceId: backCam?{exact:backCam.deviceId}:undefined,
+        facingMode: backCam?undefined:"environment",
+        width:{ideal:1920}, height:{ideal:1080}
+      }
+    };
+    await codeReader.decodeFromConstraints(scanConstraints,video,result=>{
       if(!result||overlayVisible||paused) return;
       const now=Date.now();
-      if(now-lastProcessed<600) return; // throttle to ~1.5 checks/sec — saves CPU/battery
+      if(now-lastProcessed<300) return; // throttle to ~3 checks/sec — balances speed and battery
       lastProcessed=now;
       const text=result.getText();
       if(text===lastRaw&&(now-lastAt)<8000) return;
