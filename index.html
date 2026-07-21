@@ -551,7 +551,6 @@ function handleDecoded(rawText){
   const expectedNorm   = expectedFlight.replace(/^([A-Z]+)0+(\d)/,"$1$2");
   if (scannedFlight && scannedFlight !== expectedNorm) {
     showOverlay(p.sequenceNumber, p.passengerName, p.seat,
-    showOverlay(p.sequenceNumber, p.passengerName, p.seat,
       "wrongflight-ov", "⛔", "Wrong Flight",
       "This pass is for " + p.flightNumber + " — not " + expectedFlight, p.ticketNumber);
     entries.unshift({ sequenceNumber:p.sequenceNumber, passengerName:p.passengerName,
